@@ -22,30 +22,30 @@
  */
 
 namespace ft {
-template <class _Iterator>
+template <typename Iterator>
 struct iterator_traits {
-  typedef typename _Iterator::difference_type difference_type;
-  typedef typename _Iterator::value_type value_type;
-  typedef typename _Iterator::pointer pointer;
-  typedef typename _Iterator::reference reference;
-  typedef typename _Iterator::iterator_category iterator_category;
+  typedef typename Iterator::difference_type difference_type;
+  typedef typename Iterator::value_type value_type;
+  typedef typename Iterator::pointer pointer;
+  typedef typename Iterator::reference reference;
+  typedef typename Iterator::iterator_category iterator_category;
 };
 
-template <class T>
-struct iterator_traits<T*> {
+template <typename Tp>
+struct iterator_traits<Tp*> {
   typedef std::ptrdiff_t difference_type;
-  typedef T value_type;
-  typedef T* pointer;
-  typedef T& reference;
+  typedef Tp value_type;
+  typedef Tp* pointer;
+  typedef Tp& reference;
   typedef std::random_access_iterator_tag iterator_category;
 };
 
-template <class T>
-struct iterator_traits<const T*> {
+template <typename Tp>
+struct iterator_traits<const Tp*> {
   typedef std::ptrdiff_t difference_type;
-  typedef T value_type;
-  typedef const T* pointer;
-  typedef const T& reference;
+  typedef Tp value_type;
+  typedef const Tp* pointer;
+  typedef const Tp& reference;
   typedef std::random_access_iterator_tag iterator_category;
 };
 
