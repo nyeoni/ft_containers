@@ -9,9 +9,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 # Add test files
-add_executable(ft_container_test
-                main.cpp
-                iterator.cpp)
+file(GLOB TEST_FILES *.cpp)
+add_executable(ft_container_test ${TEST_FILES})
 target_compile_options(ft_container_test PRIVATE -std=c++11)
 
 target_link_libraries(ft_container_test PRIVATE ft_container_lib gtest gmock gtest_main)
