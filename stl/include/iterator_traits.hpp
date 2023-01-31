@@ -13,16 +13,18 @@
 #include <cstddef>
 
 /**
+ * @class iterator_traits
+ * @namespace ft
  * @brief
  * std::iterator_traits is the type trait class that provides uniform interface
  * to the properties of LegacyIterator types. This makes it possible to
  * implement algorithms only in terms of iterators.
  *
- * https://en.cppreference.com/w/cpp/iterator/iterator_traits
+ * @see https://en.cppreference.com/w/cpp/iterator/iterator_traits
  */
 
 namespace ft {
-template <typename Iterator>
+template<typename Iterator>
 struct iterator_traits {
   typedef typename Iterator::difference_type difference_type;
   typedef typename Iterator::value_type value_type;
@@ -31,21 +33,21 @@ struct iterator_traits {
   typedef typename Iterator::iterator_category iterator_category;
 };
 
-template <typename Tp>
-struct iterator_traits<Tp*> {
+template<typename Tp>
+struct iterator_traits<Tp *> {
   typedef std::ptrdiff_t difference_type;
   typedef Tp value_type;
-  typedef Tp* pointer;
-  typedef Tp& reference;
+  typedef Tp *pointer;
+  typedef Tp &reference;
   typedef std::random_access_iterator_tag iterator_category;
 };
 
-template <typename Tp>
-struct iterator_traits<const Tp*> {
+template<typename Tp>
+struct iterator_traits<const Tp *> {
   typedef std::ptrdiff_t difference_type;
   typedef Tp value_type;
-  typedef const Tp* pointer;
-  typedef const Tp& reference;
+  typedef const Tp *pointer;
+  typedef const Tp &reference;
   typedef std::random_access_iterator_tag iterator_category;
 };
 
