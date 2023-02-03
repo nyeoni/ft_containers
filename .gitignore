@@ -158,6 +158,7 @@ fabric.properties
 
 # CMake build file
 build/
+build/*
 
 # exec files
 ft_container_test
