@@ -24,7 +24,7 @@ namespace ft {
  * @namespace ft
  * @brief random_aft::vector_iterator for ft::vector
  * @tparam T value_type
- * @note Iter 는 포인터 처럼 사용할 수 있음 (Iter == T *) 그래서 iterator_traits<T *> 로 들어갈 예정임
+ * @note _Iter 는 포인터 처럼 사용할 수 있음 (_Iter == T *) 그래서 iterator_traits<T *> 로 들어갈 예정임
  */
 template<class Iter>
 class _vector_iterator : public std::iterator<std::random_access_iterator_tag,
@@ -47,6 +47,8 @@ class _vector_iterator : public std::iterator<std::random_access_iterator_tag,
   explicit _vector_iterator(const Iter &it) : _it(it) {}
   template<typename U>
   explicit _vector_iterator(const _vector_iterator<U> &u) : _it(u.base()) {}
+
+  // todo : 소멸자 추가 (?)
 
   // member functions
   iterator_type base() const { return _it; }
@@ -134,7 +136,6 @@ _vector_iterator<Iter> operator-(typename _vector_iterator<Iter>::difference_typ
                                  const _vector_iterator<Iter> &rev_it) {
   return _vector_iterator<Iter>(rev_it.base + n);
 }
-};
 
 /**
  * @class _vector_base
@@ -148,7 +149,58 @@ template<
     class Allocator = std::allocator<T>
 >
 class _vector_base {
+// protected:
+//  typedef Allocator allocator_type;
+//  typedef typename allocator_type::reference reference;
+//  typedef typename allocator_type::const_reference const_reference;
+//  typedef typename allocator_type::pointer pointer;
+//  typedef typename allocator_type::const_pointer const_pointer;
+ public:
+  typedef Allocator allocator_type;
+ protected:
+  allocator_type _m_data_allocator;
+  T *_m_start;
+  T *_m_finish;
+  T *_m_end_of_storage;
 
+ public:
+  /**
+   * @brief Default _vector_base constructor
+   * @param a allocator
+   */
+  explicit _vector_base(const allocator_type &a)
+      : _m_data_allocator(a), _m_start(NULL), _m_finish(NULL), _m_end_of_storage(NULL) {}
+  /**
+   * @brief Constructor that allocates memory as large as n
+   * @param n memory size
+   * @param a allocator
+   */
+  explicit _vector_base(size_t n, const allocator_type &a) : _m_data_allocator(a) {
+    _m_start = _m_allocate(n);
+    _m_finish = _m_start;
+    _m_end_of_storage = _m_start + n;
+  }
+  /**
+   * @brief Destructor of _vector_base
+   *
+   * Release the memory allocated to the RAII pattern.
+   */
+  ~_vector_base() {
+    _m_deallocate(_m_start, _m_end_of_storage - _m_start);
+  }
+
+  /**
+   * @brief Allocate n amount of memory to allocator
+   * @param n memory size
+   * @return start address of allocated memory space
+   */
+  T *_m_allocate(size_t n) { return _m_data_allocator.allocate(n); }
+  /**
+   * @brief Release allocated memory
+   * @param p pointer
+   * @param n size
+   */
+  void _m_deallocate(T *p, size_t n) { _m_data_allocator.deallocate(p, n); }
 };
 
 /**
@@ -161,7 +213,7 @@ template<
     class T,
     class Allocator = std::allocator<T>
 >
- class vector : protected ft::_vector_base<T, Allocator> {
+class vector : protected _vector_base<T, Allocator> {
  public:
   typedef T value_type;
   typedef Allocator allocator_type;
@@ -175,6 +227,6 @@ template<
 
 };
 
-}
+}; // namespace ft
 
 #endif //VECTOR_HPP_
