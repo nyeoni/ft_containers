@@ -102,28 +102,28 @@ class reverse_iterator : public std::iterator<typename iterator_traits<Iter>::it
 
 // non-member function
 // relational operators
-template<class Iter>
-bool operator==(const reverse_iterator<Iter> &lhs, const reverse_iterator<Iter> &rhs) {
+template<class Iter1, class Iter2>
+bool operator==(const reverse_iterator<Iter1> &lhs, const reverse_iterator<Iter2> &rhs) {
   return lhs.base() == rhs.base();
 }
-template<class Iter>
-bool operator!=(const reverse_iterator<Iter> &lhs, const reverse_iterator<Iter> &rhs) {
+template<class Iter1, class Iter2>
+bool operator!=(const reverse_iterator<Iter1> &lhs, const reverse_iterator<Iter2> &rhs) {
   return lhs.base() != rhs.base();
 }
-template<class Iter>
-bool operator<(const reverse_iterator<Iter> &lhs, const reverse_iterator<Iter> &rhs) {
+template<class Iter1, class Iter2>
+bool operator<(const reverse_iterator<Iter1> &lhs, const reverse_iterator<Iter2> &rhs) {
   return lhs.base() > rhs.base();
 }
-template<class Iter>
-bool operator<=(const reverse_iterator<Iter> &lhs, const reverse_iterator<Iter> &rhs) {
+template<class Iter1, class Iter2>
+bool operator<=(const reverse_iterator<Iter1> &lhs, const reverse_iterator<Iter2> &rhs) {
   return lhs.base() <= rhs.base();
 }
-template<class Iter>
-bool operator>(const reverse_iterator<Iter> &lhs, const reverse_iterator<Iter> &rhs) {
+template<class Iter1, class Iter2>
+bool operator>(const reverse_iterator<Iter1> &lhs, const reverse_iterator<Iter2> &rhs) {
   return lhs.base() > rhs.base();
 }
-template<class Iter>
-bool operator>=(const reverse_iterator<Iter> &lhs, const reverse_iterator<Iter> &rhs) {
+template<class Iter1, class Iter2>
+bool operator>=(const reverse_iterator<Iter1> &lhs, const reverse_iterator<Iter2> &rhs) {
   return lhs.base() >= rhs.base();
 }
 
