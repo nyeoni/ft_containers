@@ -14,6 +14,7 @@
 #include "type_traits.hpp"
 #include "iterator_traits.hpp"
 #include "reverse_iterator.hpp"
+#include "ftexcept.hpp"
 
 // 나중에 지우기
 #include <vector>
@@ -159,16 +160,16 @@ class _vector_base {
  public:
   /**
    * @brief Default _vector_base constructor
-   * @param a allocator
+   * @param alloc allocator
    */
-  explicit _vector_base(const allocator_type &a)
-      : _m_data_allocator(a), _m_start(NULL), _m_finish(NULL), _m_end_of_storage(NULL) {}
+  explicit _vector_base(const allocator_type &alloc)
+      : _m_data_allocator(alloc), _m_start(NULL), _m_finish(NULL), _m_end_of_storage(NULL) {}
   /**
    * @brief Constructor that allocates memory as large as n
    * @param n memory size
-   * @param a allocator
+   * @param alloc allocator
    */
-  explicit _vector_base(size_t n, const allocator_type &a) : _m_data_allocator(a) {
+  explicit _vector_base(size_t n, const allocator_type &alloc) : _m_data_allocator(alloc) {
     _m_start = _m_allocate(n);
     _m_finish = _m_start;
     _m_end_of_storage = _m_start + n;
@@ -196,7 +197,7 @@ class _vector_base {
   void _m_deallocate(T *p, size_t n) { _m_data_allocator.deallocate(p, n); }
 
   /**
-   *
+   * @brief Get vector allocator instance
    * @return Allocator
    */
   allocator_type get_allocator() const { return _m_data_allocator; }
@@ -213,7 +214,7 @@ template<
     class Allocator = std::allocator<T>
 >
 class vector : protected _vector_base<T, Allocator> {
-  typedef _vector_base<T, Allocator> base_type;
+  typedef _vector_base<T, Allocator> Base;
   typedef vector<T, Allocator> vector_type;
 
  public:
@@ -231,11 +232,11 @@ class vector : protected _vector_base<T, Allocator> {
   typedef std::ptrdiff_t difference_type;
 
  protected:
-  using base_type::_m_allocate;
-  using base_type::_m_deallocate;
-  using base_type::_m_start;
-  using base_type::_m_finish;
-  using base_type::_m_end_of_storage;
+  using Base::_m_allocate;
+  using Base::_m_deallocate;
+  using Base::_m_start;
+  using Base::_m_finish;
+  using Base::_m_end_of_storage;
 
  public:
   /**
@@ -244,18 +245,22 @@ class vector : protected _vector_base<T, Allocator> {
    *
    * Constructs an empty container, with no elements.
    */
-  explicit vector(const allocator_type &alloc = allocator_type()) {}
+  explicit vector(const allocator_type &alloc = allocator_type()) : Base(alloc) {}
   /**
    * @brief fill constructor
    * @param n element size
    * @param val element value
    * @param alloc allocator
    *
-   * @todo 얘 1등
    * Constructs a container with n elements. Each element is a copy of val.
+   * vector(n), vector(n, val), vector(n, val, alloc) 다 가능한 형태의 생성자. default param 값을 지정해줌으로서.
+   * Base(n, alloc) 함수를 통해서 alloc 을 통해 n 만큼의 벡터 메모리 공간을 할당받음
+   * uninitialized_fill_n 함수를 통해서 새로 할당된 벡터 메모리 공간에 n 만큼 val 값을 채워줌
    */
   explicit vector(size_type n, const value_type &val = value_type(),
-                  const allocator_type &alloc = allocator_type()) {}
+                  const allocator_type &alloc = allocator_type()) : Base(n, alloc) {
+    this->_m_finish = std::uninitialized_fill_n(this->_m_start, n, val);
+  }
   /**
    * @brief range constructor
    * @tparam InputIterator
@@ -275,12 +280,17 @@ class vector : protected _vector_base<T, Allocator> {
    * @param x
    *
    * Constructs a container with a copy of each of the elements in x, in the same order.
-   * @todo 2등으로 구현하고 저 위에 있는 생성자는 나중에 구현하기 type_traits
+   * 새로 생성된 벡터에 x 벡터의 값들을 uninitialized_copy 함수를 이용하여 복사한다. 값만 복사되고 메모리 복사는 일어나지 않는다.
+   * Base(x.size(), x.get_allocator()) 함수를 통해서 새로 메모리 공간을 할당 받음
+   * uninialized_copy 함수를 통해서 새로 할당 받은 메모리에 %x 벡터의 값들을 복사함
    */
-  vector(const vector &x) {}
+  vector(const vector &x) : Base(x.size(), x.get_allocator()) {
+    this->_m_finish = std::uninitialized_copy(x.begin(), x.end(), this->_m_start);
+  }
 
   // destroy only erases the elements
-  // todo : 걍 쉽게 구현 가능
+  // todo : 메모리 관련 함수 만들어서 그거 이용해서 소멸해보기
+  // 벡터 내부의 요소들을 destory 해주는 소멸자
   virtual ~vector() {};
 
   /**
@@ -292,6 +302,113 @@ class vector : protected _vector_base<T, Allocator> {
    */
   vector &operator=(const vector &x) {}
 
+  /* ****************************************************** */
+  /*                      Iterators                         */
+  /* ****************************************************** */
+
+  /**
+   *
+   * @return
+   */
+  iterator begin();
+  const_iterator begin() const;
+
+  /**
+   *
+   * @return
+   *
+   * iterator 맨 뒤에 있는거 반환
+   */
+  iterator end();
+  const_iterator end() const;
+
+  /**
+   *
+   * @return
+   *
+   * Returns a reverse iterator pointing to the last element in the vector (i.e., its reverse beginning)
+   */
+  reverse_iterator rbegin() {}
+  const_reverse_iterator rbegin() const {}
+
+  /**
+   *
+   * @return
+   */
+  reverse_iterator rend() {}
+  const_reverse_iterator rend() const {}
+
+  /* ****************************************************** */
+  /*                      Capacity                          */
+  /* ****************************************************** */
+
+  /**
+   *
+   * @return
+   */
+  size_type size() const {}
+
+  /**
+   *
+   * @return
+   *
+   * Returns the maximum number of elements that the vector can hold.
+   * allocator 의 max_size 임 그거 리턴하면 됨
+   */
+  size_type max_size() const {}
+
+  /**
+   *
+   * @param n
+   * @param val
+   *
+   * 벡터의 크기를 바꾸는 함수
+   * 새 크기가 기존 크기보다 작으면 초과분이 제거된다.
+   * 새 크기가 기존 크기보다 크면 재할당이 일어난다.
+   * 재할당 / 복사 가능
+   */
+  void resize(size_type n, value_type val = value_type()) {}
+
+  /**
+   *
+   * @return
+   *
+   * Returns the size of the storage space currently allocated for the vector,
+   * expressed in terms of elements.
+   * vector capacity 리턴해주는 함수
+   */
+  size_type capacity() const {
+    return size_type(const_iterator(this->_m_end_of_storage) - begin());
+  }
+
+  /**
+   *
+   * @return
+   *
+   * 벡터가 비어있는지 확인 size 가 0인지 확인
+   */
+  bool empty() const {}
+
+  /**
+   * @brief 벡터 capacity 를 n 만큼 확보
+   * @param n
+   *
+   * 벡터 capacity 가 n 이 되도록 만드는 함수
+   * 용량이 증가 해야 하면 새로운 저장 공간을 재 할당 하고 기존 요소를 모두 새 공간 으로 복사
+   * 재할당 / 복사 가능
+   * @todo 첫번째로 구현하기
+   */
+  void reserve(size_type n) {
+    if (n < capacity()) {
+      vector<T, Allocator> tmp(n);
+
+    }
+  }
+
+  /* ****************************************************** */
+  /*                   Element access                       */
+  /* ****************************************************** */
+
   /**
    *
    * @param n
@@ -300,7 +417,50 @@ class vector : protected _vector_base<T, Allocator> {
    * Returns a reference to the element at position n in the vector container.
    */
   reference operator[](size_type n) {}
-  const_reference operator[] (size_type n) const
+  const_reference operator[](size_type n) const {}
+
+  /**
+   *
+   * @param n
+   * @return
+   *
+   * 랜덤 액세스 처럼 접근할 수 있다.
+   */
+  reference at(size_type n) {}
+
+  /**
+   *
+   * @param n
+   * @return
+   *
+   * 랜덤 액세스처럼 at(i) 로 접근 가눙
+   * out_of_range 예외처리 해줘야 함
+   * 반대로 꺽쇠는 예외처리 안해줘도 됨 ㅎㅋㅎㅋ
+   */
+  const_reference at(size_type n) const {
+  }
+
+  /**
+   *
+   * @return
+   *
+   * Returns a reference to the first element in the vector.
+   */
+  reference front() {}
+  const_reference front() const {}
+
+  /**
+   *
+   * @return
+   *
+   * 끝에 있는애 주소값 주는 애여서 걍 심심하면 구현하셈 개 쉬움 (by san)
+   */
+  reference back() {}
+  const_reference back() const {}
+
+  /* ****************************************************** */
+  /*                      Modifiers                          */
+  /* ****************************************************** */
 
   /**
    * @brief Vector assign
@@ -326,125 +486,16 @@ class vector : protected _vector_base<T, Allocator> {
   void assign(size_type n, const value_type &val) {}
 
   /**
-   * @brief 벡터 capacity 를 n 만큼 확보
-   * @param n
-   *
-   * 벡터 capacity 가 n 이 되도록 만드는 함수
-   * 용량이 증가 해야 하면 새로운 저장 공간을 재 할당 하고 기존 요소를 모두 새 공간 으로 복사
-   * 재할당 / 복사 가능
-   * @todo 첫번째로 구현하기
-   */
-  void reserve(size_type n) {}
-
-  /**
-   *
-   * @param n
-   * @param val
-   *
-   * 벡터의 크기를 바꾸는 함수
-   * 새 크기가 기존 크기보다 작으면 초과분이 제거된다.
-   * 새 크기가 기존 크기보다 크면 재할당이 일어난다.
-   * 재할당 / 복사 가능
-   */
-  void resize(size_type n, value_type val = value_type()) {}
-
-  /**
-   * @brief clear
-   * 벡터의 모든 요소를 제거한다.
-   * size 0 capacity 는 변하지 않는다.
-   */
-  void clear() {}
-
-  /**
-   *
-   * @param n
-   * @return
-   *
-   * 랜덤 액세스 처럼 접근할 수 있다.
-   */
-  reference at(size_type n) {}
-
-  /**
-   *
-   * @param n
-   * @return
-   *
-   * 랜덤 액세스처럼 at(i) 로 접근 가눙
-   * out_of_range 예외처리 해줘야 함
-   * 반대로 꺽쇠는 예외처리 안해줘도 됨 ㅎㅋㅎㅋ
-   */
-  const_reference at(size_type n) const;
-
-  /**
-   *
-   * @return
-   *
-   * 끝에 있는애 주소값 주는 애여서 걍 심심하면 구현하셈 개 쉬움 (by san)
-   */
-  reference back() {}
-  const_reference back() const {}
-
-  /**
-   *
-   * @return
-   */
-  iterator begin();
-  const_iterator begin() const;
-
-  /**
-   *
-   * @return
-   *
-   * iterator 맨 뒤에 있는거 반환
-   */
-  iterator end();
-  const_iterator end() const;
-
-  /**
-   *
-   * @return
-   *
-   * Returns the size of the storage space currently allocated for the vector,
-   * expressed in terms of elements.
-   * vector capacity 리턴해주는 함수
-   */
-  size_type capacity() const {}
-
-  /**
-   *
-   * @return
-   *
-   * 벡터가 비어있는지 확인 size 가 0인지 확인
-   */
-  bool empty() const {}
-
-  /**
-   *
-   * @param position
-   * @return
-   *
-   * 그 위치에 있는 함수 지워주는 함수
-   * 다 지워주고 앞으로 땡겨주는 로직까지 처리해야함
-   * 리턴값이 좀 이상해서 확인요망 지워준 그 자리를 리턴
-   */
-  iterator erase(iterator position) {}
-  iterator erase(iterator first, iterator last) {}
-
-  /**
-   *
-   * @return
-   *
-   * Returns a reference to the first element in the vector.
-   */
-  reference front();
-  const_reference front() const;
-
-  /**
    *
    * @param val
    * @todo 2등 구현 함수
    */
   void push_back(const value_type &val) {}
+
+  /**
+   * 맨 뒤에 요소 삭제
+   */
+  void pop_back() {}
 
   /**
    *
@@ -461,45 +512,44 @@ class vector : protected _vector_base<T, Allocator> {
 
   /**
    *
+   * @param position
    * @return
    *
-   * Returns the maximum number of elements that the vector can hold.
-   * allocator 의 max_size 임 그거 리턴하면 됨
+   * 그 위치에 있는 함수 지워주는 함수
+   * 다 지워주고 앞으로 땡겨주는 로직까지 처리해야함
+   * 리턴값이 좀 이상해서 확인요망 지워준 그 자리를 리턴
    */
-  size_type max_size() const {}
-
-  /**
-   * 맨 뒤에 요소 삭제
-   */
-  void pop_back() {}
-
-  /**
-   *
-   * @return
-   *
-   * Returns a reverse iterator pointing to the last element in the vector (i.e., its reverse beginning)
-   */
-  reverse_iterator rbegin() {}
-  const_reverse_iterator rbegin() const {}
-
-  /**
-   *
-   * @return
-   */
-  reverse_iterator rend() {}
-  const_reverse_iterator rend() const {}
-
-  /**
-   *
-   * @return
-   */
-  size_type size() const {}
+  iterator erase(iterator position) {}
+  iterator erase(iterator first, iterator last) {}
 
   /**
    *
    * @param x
    */
-  void swap (vector& x) {}
+  void swap(vector &x) {}
+
+  /**
+   * @brief clear
+   * 벡터의 모든 요소를 제거한다.
+   * size 0 capacity 는 변하지 않는다.
+   */
+  void clear() {}
+
+  /* ****************************************************** */
+  /*               Memory util function                     */
+  /* ****************************************************** */
+ protected:
+  void _m_range_check(size_type n) const {
+    if (n >= size()) {
+      throw ft::out_of_range("vector");
+    }
+  }
+
+  void _m_length_check(size_type n) const {
+    if (n > max_size()) {
+      throw ft::length_error("vector");
+    }
+  }
 };
 
 }; // namespace ft
