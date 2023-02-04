@@ -97,28 +97,28 @@ class _vector_iterator : public std::iterator<std::random_access_iterator_tag,
 
 // non-member function
 // relational operators
-template<class Iter>
-bool operator==(const _vector_iterator<Iter> &lhs, const _vector_iterator<Iter> &rhs) {
+template<class Iter1, class Iter2>
+bool operator==(const _vector_iterator<Iter1> &lhs, const _vector_iterator<Iter2> &rhs) {
   return lhs.base() == rhs.base();
 }
-template<class Iter>
-bool operator!=(const _vector_iterator<Iter> &lhs, const _vector_iterator<Iter> &rhs) {
+template<class Iter1, class Iter2>
+bool operator!=(const _vector_iterator<Iter1> &lhs, const _vector_iterator<Iter2> &rhs) {
   return lhs.base() != rhs.base();
 }
-template<class Iter>
-bool operator<(const _vector_iterator<Iter> &lhs, const _vector_iterator<Iter> &rhs) {
+template<class Iter1, class Iter2>
+bool operator<(const _vector_iterator<Iter1> &lhs, const _vector_iterator<Iter2> &rhs) {
   return lhs.base() > rhs.base();
 }
-template<class Iter>
-bool operator<=(const _vector_iterator<Iter> &lhs, const _vector_iterator<Iter> &rhs) {
+template<class Iter1, class Iter2>
+bool operator<=(const _vector_iterator<Iter1> &lhs, const _vector_iterator<Iter2> &rhs) {
   return lhs.base() <= rhs.base();
 }
-template<class Iter>
-bool operator>(const _vector_iterator<Iter> &lhs, const _vector_iterator<Iter> &rhs) {
+template<class Iter1, class Iter2>
+bool operator>(const _vector_iterator<Iter1> &lhs, const _vector_iterator<Iter2> &rhs) {
   return lhs.base() > rhs.base();
 }
-template<class Iter>
-bool operator>=(const _vector_iterator<Iter> &lhs, const _vector_iterator<Iter> &rhs) {
+template<class Iter1, class Iter2>
+bool operator>=(const _vector_iterator<Iter1> &lhs, const _vector_iterator<Iter2> &rhs) {
   return lhs.base() >= rhs.base();
 }
 
