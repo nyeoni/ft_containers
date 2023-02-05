@@ -9,6 +9,8 @@
 #ifndef TYPE_TRAITS_HPP_
 #define TYPE_TRAITS_HPP_
 
+#include <utility>
+
 namespace ft {
 
 /**
@@ -87,25 +89,6 @@ struct is_integral<long long> : public true_type {};
 template<>
 struct is_integral<unsigned long long> : public true_type {};
 
-/**
- * @brief Compares the elements in the range [first1,last1) with those in the range beginning at first2, and returns true if all of the elements in both ranges match.
- * @tparam InputIterator1
- * @tparam InputIterator2
- * @param first1
- * @param last1
- * @param first2
- * @return true if all the elements in the range [first1,last1) compare equal to those of the range starting at first2, and false otherwise.
- */
-template<class InputIterator1, class InputIterator2>
-bool equal(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2) {
-  while (first1 != last1) {
-    if (*first1 != *first2)
-      return false;
-    ++first1;
-    ++first2;
-  }
-  return true;
-}
 }
 
 #endif //TYPE_TRAITS_HPP_

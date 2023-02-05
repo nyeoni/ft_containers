@@ -53,39 +53,38 @@ class _vector_iterator : public std::iterator<std::random_access_iterator_tag,
   // member functions
   iterator_type base() const { return _it; }
   reference operator*() const {
-    Iter tmp = _it;
-    return *--tmp;
+    return *_it;
   } // *rit
   _vector_iterator operator+(difference_type n) const {
-    return _vector_iterator(_it - n);
+    return _vector_iterator(_it + n);
   } // rit + n
   _vector_iterator &operator++() {
-    --_it;
+    ++_it;
     return *this;
   } // ++rit
   _vector_iterator operator++(int) {
     _vector_iterator tmp(*this);
-    --_it;
+    ++_it;
     return tmp;
   } // rit++
   _vector_iterator &operator--() {
-    ++_it;
+    --_it;
     return *this;
   } // --rit
   _vector_iterator operator--(int) {
     _vector_iterator tmp(*this);
-    ++_it;
+    --_it;
     return tmp;
   } // rit--
   _vector_iterator &operator+=(difference_type n) {
-    _it -= n;
+    _it += n;
     return *this;
   }
   _vector_iterator operator-(difference_type n) const {
-    return _vector_iterator(_it + n);
+    return _vector_iterator(_it - n);
   } // rit - n
   _vector_iterator &operator-=(difference_type n) {
-    _it += n;
+    _it -= n;
     return *this;
   }
   pointer operator->() const {
@@ -127,14 +126,14 @@ bool operator>=(const _vector_iterator<Iter1> &lhs, const _vector_iterator<Iter2
 template<class Iter>
 _vector_iterator<Iter> operator+(typename _vector_iterator<Iter>::difference_type n,
                                  const _vector_iterator<Iter> &rev_it) {
-  return _vector_iterator<Iter>(rev_it.base() - n);
+  return _vector_iterator<Iter>(rev_it.base() + n);
 } // n + rit
 
 // operator- (_vector_iterator)
 template<class Iter>
 _vector_iterator<Iter> operator-(typename _vector_iterator<Iter>::difference_type n,
                                  const _vector_iterator<Iter> &rev_it) {
-  return _vector_iterator<Iter>(rev_it.base + n);
+  return _vector_iterator<Iter>(rev_it.base - n);
 }
 
 /**
@@ -400,8 +399,8 @@ class vector : protected _vector_base<T, Allocator> {
    */
   void reserve(size_type n) {
     if (n < capacity()) {
-      vector<T, Allocator> tmp(n);
-
+      vector v;
+      v._m_allocate(n)
     }
   }
 
@@ -550,6 +549,44 @@ class vector : protected _vector_base<T, Allocator> {
       throw ft::length_error("vector");
     }
   }
+
+  /* ****************************************************** */
+  /*              Internal assign function                  */
+  /* ****************************************************** */
+
+  template <class Integer>
+  void _m_assign_dispatch(Integer n, Integer val, true_type) {
+    _m_fill_assign(static_cast<size_type>(n), static_cast<value_type>(val));
+  }
+
+  template <class InputIterator>
+  void _m_assgin_dispatch(InputIterator first, InputIterator last, false_type) {
+    typedef typename iterator_traits<InputIterator>::iterator_category _iterator_category;
+    _m_assign_aux(first, last, _iterator_category());
+  }
+
+  template<class InputIterator>
+  void _m_assign_aux(InputIterator first, InputIterator last, std::input_iterator_tag) {
+    // input iterator assign logic
+  }
+
+  template<class FowardIterator>
+  void _m_assign_aux(FowardIterator first, FowardIterator last, std::forward_iterator_tag) {
+    // foward iterator assign logic
+  }
+
+  // Called by assign(n, t)
+  void _m_fill_assign(size_type n, const value_type &val) {
+
+  }
+  // _m_assign_dispatch -> assign(InputIter first, InputIter last) 에서 사용
+    // _m_assign_dispatch(Integer n, Integer val, true_type)
+  // _m_fill_assign -> assign(n, val) 에서 사용
+
+  // assign 함수 구현
+  // 1. assgin(size_type n, const value_type &val) -> _m_fill_assign(n, val) 로 바로 값 채워줌
+  // 2. assign(InputIter first, InputIter last) -> _m_assign_dispatch(first, last, is_integer<InputIter>
+    // 2-1.InputIterator -> _m_assign_aux()
 };
 
 }; // namespace ft
