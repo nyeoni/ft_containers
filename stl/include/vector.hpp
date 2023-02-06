@@ -173,7 +173,7 @@ class _vector_base {
     _m_finish = _m_start;
     _m_end_of_storage = _m_start + n;
   }
-  /**
+  /**:
    * @brief Destructor of _vector_base
    *
    * Release the memory allocated to the RAII pattern.
