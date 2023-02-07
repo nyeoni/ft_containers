@@ -7,12 +7,4 @@
  */
 
 #include "gtest/gtest.h"
-
-namespace {
-TEST(config_test, allow_method) {
-  EXPECT_EQ(false, false);
-}
-}
-
-
-
+#include "reverse_iterator.hpp"

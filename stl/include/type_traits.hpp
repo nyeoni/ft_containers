@@ -9,7 +9,7 @@
 #ifndef TYPE_TRAITS_HPP_
 #define TYPE_TRAITS_HPP_
 
-#include <utility>
+#include "iterator_traits.hpp"
 
 namespace ft {
 
@@ -89,6 +89,43 @@ struct is_integral<long long> : public true_type {};
 template<>
 struct is_integral<unsigned long long> : public true_type {};
 
+/**
+ * @brief Traits class that identifies whether T is the same type as U
+ * @tparam T type1
+ * @tparam U type2
+ */
+template<typename T, typename U>
+struct is_same : false_type {};
+
+template<typename T>
+struct is_same<T, T> : true_type {};
+
+template<typename T>
+struct is_iterator {
+ private:
+  typedef char yes;
+  typedef long no;
+
+  /**
+   * @tparam U 들어오는 타입에 대한 추론을 하는 역할 (U *)
+   * @return yes (char)
+   */
+  template<typename U>
+  static yes test(U *, typename U::iterator_category * = 0);
+
+  static no test(...);
+ public:
+  enum { value = sizeof(test(static_cast<T *>(0))) == sizeof(yes) };
+};
+
+//typedef iterator_constant<bool, true> true_type;
+//typedef iterator_constant<bool, false> false_type;
+
+//template<class T>
+//struct is_iterator : public false_type {};
+//
+//template<>
+//struct is_iterator< : public true_type {};
 }
 
 #endif //TYPE_TRAITS_HPP_
