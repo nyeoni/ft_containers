@@ -18,7 +18,7 @@ namespace ft {
  * @class reverse_iterator
  * @namespace ft
  * @brief reverse_iterator
- * @tparam Iter iterator
+ * @tparam Iter iterator_traits
  */
 template<class Iter>
 class reverse_iterator : public std::iterator<typename iterator_traits<Iter>::iterator_category,
@@ -43,7 +43,7 @@ class reverse_iterator : public std::iterator<typename iterator_traits<Iter>::it
   reverse_iterator() : current() {}
   /**
    * initialization constructor
-   * @param it iterator
+   * @param it iterator_traits
    */
   explicit reverse_iterator(Iter it) : current(it) {}
   /**
@@ -136,9 +136,9 @@ reverse_iterator<Iter> operator+(typename reverse_iterator<Iter>::difference_typ
 
 // operator- (reverse_iterator)
 template<class Iter>
-reverse_iterator<Iter> operator-(typename reverse_iterator<Iter>::difference_type n,
-                                 const reverse_iterator<Iter> &rev_it) {
-  return reverse_iterator<Iter>(rev_it.base + n);
+typename reverse_iterator<Iter>::difference_type operator-(const reverse_iterator<Iter> &lhs,
+                                                           const reverse_iterator<Iter> &rhs) {
+  return rhs.base() - lhs.base();
 }
 
 } // namespace ft
