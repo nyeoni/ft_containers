@@ -346,19 +346,19 @@ class vector : protected _vector_base<T, Allocator> {
   /* ****************************************************** */
 
   /**
-   *
-   * @return
+   * @brief Returns the number of elements in the %vector
+   * @return the number of elements
    */
-  size_type size() const {}
+  size_type size() const { return size_type(end() - begin()); }
 
   /**
-   *
-   * @return
+   * @brief Returns the size() of the largest possible %vector.
+   * @return size of largest possible %vector
    *
    * Returns the maximum number of elements that the vector can hold.
    * allocator 의 max_size 임 그거 리턴하면 됨
    */
-  size_type max_size() const {}
+  size_type max_size() const { return size_type(-1) / sizeof(value_type); }
 
   /**
    *
@@ -373,8 +373,8 @@ class vector : protected _vector_base<T, Allocator> {
   void resize(size_type n, value_type val = value_type()) {}
 
   /**
-   *
-   * @return
+   * @brief the size of the storage space (vector allocated size)
+   * @return the size of the storage space (vector allocated size)
    *
    * Returns the size of the storage space currently allocated for the vector,
    * expressed in terms of elements.
@@ -385,12 +385,12 @@ class vector : protected _vector_base<T, Allocator> {
   }
 
   /**
-   *
-   * @return
+   * @brief Returns true if the %vector is empty.
+   * @return true : empty, false : not empty
    *
    * 벡터가 비어있는지 확인 size 가 0인지 확인
    */
-  bool empty() const {}
+  bool empty() const { return begin() == end(); }
 
   /**
    * @brief 벡터 capacity 를 n 만큼 확보
