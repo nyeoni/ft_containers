@@ -427,53 +427,77 @@ class vector : protected _vector_base<T, Allocator> {
   /* ****************************************************** */
 
   /**
-   *
-   * @param n
-   * @return
+   * @brief  Subscript access to the data contained in the %vector.
+   * @param  n  The index of the element for which data should be accessed.
+   * @return  Read/write reference to data.
    *
    * Returns a reference to the element at position n in the vector container.
    */
-  reference operator[](size_type n) {}
-  const_reference operator[](size_type n) const {}
+  reference operator[](size_type n) { return *(begin() + n); }
+  /**
+   * @brief  Subscript access to the data contained in the %vector.
+   * @param  n  The index of the element for which data should be accessed.
+   * @return  Read-only reference to data.
+   *
+   * Returns a reference to the element at position n in the vector container.
+   */
+  const_reference operator[](size_type n) const { return *(begin() + n); }
 
   /**
-   *
-   * @param n
-   * @return
+   * @brief Provides access to the data contained in the %vector
+   * @param n index of the element
+   * @return Read/Write data reference
+   * @throw ft::out_of_range If %n is an invalid index
    *
    * 랜덤 액세스 처럼 접근할 수 있다.
+   * Strong Guarantee - if an exception is thrown, there are no changes in the container.
+   * It throws out_of_range if n is out of bounds.
    */
-  reference at(size_type n) {}
-
-  /**
-   *
-   * @param n
-   * @return
-   *
-   * 랜덤 액세스처럼 at(i) 로 접근 가눙
-   * out_of_range 예외처리 해줘야 함
-   * 반대로 꺽쇠는 예외처리 안해줘도 됨 ㅎㅋㅎㅋ
-   */
-  const_reference at(size_type n) const {
+  reference at(size_type n) {
+    _range_check(n);
+    return (*this)[n];
   }
 
   /**
-   *
-   * @return
+  * @brief Provides access to the data contained in the %vector
+  * @param n index of the element
+  * @return Read-only data reference
+  * @throw ft::out_of_range If %n is an invalid index
+  *
+  * Strong Guarantee - if an exception is thrown, there are no changes in the container.
+  * It throws out_of_range if n is out of bounds.
+  */
+  const_reference at(size_type n) const {
+    _range_check(n);
+    return (*this)[n];
+  }
+
+  /**
+   * @brief Returns read/write reference to the data at the first element of the %vector.
+   * @return Read/Write reference to the data at the first element of the %vector.
    *
    * Returns a reference to the first element in the vector.
    */
-  reference front() {}
-  const_reference front() const {}
+  reference front() { return *begin(); }
+  /**
+   * @brief Returns read-only (constant) reference to the data at the first element of the %vector.
+   * @return Read-only reference to the data at the first element of the %vector.
+   *
+   * Returns a reference to the first element in the vector.
+   */
+  const_reference front() const { return *begin(); }
 
   /**
-   *
-   * @return
-   *
-   * 끝에 있는애 주소값 주는 애여서 걍 심심하면 구현하셈 개 쉬움 (by san)
+   * @brief Returns a read/write reference to the data at the last element of the %vector.
+   * @return Read/Write data at the last element of vector
    */
-  reference back() {}
-  const_reference back() const {}
+  reference back() { return *(end() - 1); }
+
+  /**
+   * @brief Returns a read-only (constant) reference to the data at the last element of the %vector.
+   * @return Read-only data at the last element of vector
+   */
+  const_reference back() const { return *(end() - 1); }
 
   /* ****************************************************** */
   /*                      Modifiers                          */
