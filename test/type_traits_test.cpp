@@ -8,6 +8,7 @@
 
 #include "type_traits.hpp"
 #include "gtest/gtest.h"
+#include "vector.hpp"
 #include <iostream>
 
 #define SHOW(...) \
@@ -30,12 +31,13 @@ using IntegralTypes = ::testing::Types<bool,
                                        int, unsigned int, long, unsigned long, long long, unsigned long long>;
 TYPED_TEST_SUITE(IsIntegralTest, IntegralTypes);
 
-TYPED_TEST(IsIntegralTest, is_integral_test) {
+TYPED_TEST(IsIntegralTest, IsIntegralCorrect) {
   typename TestFixture::value_type val = TestFixture::value;
   EXPECT_EQ(val, 1);
 }
 
-TEST(IS_ITEGRAL_TEST, bool_test) {
+// is_integral test
+TEST(IS_ITEGRAL_TEST, IsIntegralWrong) {
   SHOW(ft::is_integral<bool>::value);
   bool result = ft::is_integral<bool>::value;
   EXPECT_EQ(result, 1);
@@ -50,3 +52,17 @@ TEST(IS_ITEGRAL_TEST, bool_test) {
   EXPECT_EQ(wrong_result, 0);
 }
 
+// is_iterator_test
+TEST(IS_ITERATOR_TEST, IsIteratorTest) {
+  SHOW(ft::is_iterator<ft::_vector_iterator<int *>>::value);
+
+  class A {};
+  SHOW(ft::is_iterator<A>::value);
+  SHOW(ft::is_iterator<bool>::value);
+}
+
+// is_random_access_test
+TEST(IS_RANDOM_ACCESS_TEST, IsRandomAccessTest) {
+  SHOW(ft::is_random_access_iterator<ft::_vector_iterator<int *>>::value);
+
+}
