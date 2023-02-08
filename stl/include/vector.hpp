@@ -131,10 +131,10 @@ _vector_iterator<Iter> operator+(typename _vector_iterator<Iter>::difference_typ
 
 // operator- (_vector_iterator)
 template<class Iter>
-_vector_iterator<Iter> operator-(typename _vector_iterator<Iter>::difference_type n,
-                                 const _vector_iterator<Iter> &rev_it) {
-  return _vector_iterator<Iter>(rev_it.base - n);
-}
+typename _vector_iterator<Iter>::difference_type operator-(const _vector_iterator<Iter> &lhs,
+                                                           const _vector_iterator<Iter> &rhs) {
+  return lhs.base() - rhs.base();
+} // iter1 - iter2
 
 /**
  * @class _vector_base
@@ -184,7 +184,7 @@ class _vector_base {
 
   /**
    * @brief Allocate n amount of memory to allocator
-   * @param n memory size
+   * @param n memory sie
    * @return start address of allocated memory space
    */
   T *_m_allocate(size_t n) { return _m_data_allocator.allocate(n); }
@@ -231,6 +231,7 @@ class vector : protected _vector_base<T, Allocator> {
   typedef std::ptrdiff_t difference_type;
 
  protected:
+  using Base::_m_data_allocator;
   using Base::_m_allocate;
   using Base::_m_deallocate;
   using Base::_m_start;
@@ -270,10 +271,13 @@ class vector : protected _vector_base<T, Allocator> {
    * @todo assign 만들었을때 구현하기
    * Constructs a container with as many elements as the range [first,last),
    * with each element constructed from its corresponding element in that range, in the same order.
+   * InputIterator 가 iterator 일때만 들어오도록 설정
    */
-  template<class InputIterator>
+  template<class InputIterator, typename = typename ft::enable_if<ft::is_iterator<InputIterator>::value>::type>
   vector(InputIterator first, InputIterator last,
-         const allocator_type &alloc = allocator_type()) {}
+         const allocator_type &alloc = allocator_type()) : Base(alloc) {
+    _m_init_range(first, last, is_forward_iterator<InputIterator>());
+  }
   /**
    * @brief copy constructor
    * @param x
@@ -309,23 +313,23 @@ class vector : protected _vector_base<T, Allocator> {
    *
    * @return
    */
-  iterator begin();
-  const_iterator begin() const;
+  iterator begin() { return iterator(this->_m_start); };
+  const_iterator begin() const { return const_iterator(this->_m_start); };
 
   /**
    *
    * @return
    *
-   * iterator 맨 뒤에 있는거 반환
+   * iterator_traits 맨 뒤에 있는거 반환
    */
-  iterator end();
-  const_iterator end() const;
+  iterator end() { return iterator(this->_m_finish); };
+  const_iterator end() const { return const_iterator(this->_m_finish); };
 
   /**
    *
    * @return
    *
-   * Returns a reverse iterator pointing to the last element in the vector (i.e., its reverse beginning)
+   * Returns a reverse iterator_traits pointing to the last element in the vector (i.e., its reverse beginning)
    */
   reverse_iterator rbegin() {}
   const_reverse_iterator rbegin() const {}
@@ -400,7 +404,7 @@ class vector : protected _vector_base<T, Allocator> {
   void reserve(size_type n) {
     if (n < capacity()) {
       vector v;
-      v._m_allocate(n)
+      v._m_allocate(n);
     }
   }
 
@@ -489,7 +493,14 @@ class vector : protected _vector_base<T, Allocator> {
    * @param val
    * @todo 2등 구현 함수
    */
-  void push_back(const value_type &val) {}
+  void push_back(const value_type &val) {
+    if (this->_m_finish != this->_m_end_of_storage) {
+      _m_constructor(this->_m_finish, val);
+      ++this->_m_finish;
+    } else {
+      // 꽉 찼을 경우
+    }
+  }
 
   /**
    * 맨 뒤에 요소 삭제
@@ -534,9 +545,6 @@ class vector : protected _vector_base<T, Allocator> {
    */
   void clear() {}
 
-  /* ****************************************************** */
-  /*               Memory util function                     */
-  /* ****************************************************** */
  protected:
   void _m_range_check(size_type n) const {
     if (n >= size()) {
@@ -551,15 +559,77 @@ class vector : protected _vector_base<T, Allocator> {
   }
 
   /* ****************************************************** */
+  /*               Memory util function                     */
+  /* ****************************************************** */
+
+  void _m_constructor(T *p, const T &element) {
+    this->_m_data_allocator.construct(p, element);
+  }
+
+  void _m_destroy(T *p) {
+    this->_m_data_allocator.destroy(p);
+  }
+
+  /**
+   *
+   * @tparam ForwardIterator
+   * @param n
+   * @param first
+   * @param last
+   * @return
+   *
+   * _m_alloc_and_copy 함수는 n 만큼의 메모리 공간을 result 에 할당 받고
+   * [first, last) 만큼의 요소를 순회하면서 복사하고
+   * 복사한 새로운 포인터 result 를 반환한다.
+   */
+  template<class ForwardIterator>
+  pointer _m_allocate_and_copy(size_type n, ForwardIterator first, ForwardIterator last) {
+    pointer _result = _m_allocate(n);
+    try {
+      std::uninitialized_copy(first, last, _result);
+      return _result;
+    } catch (std::exception &e) {
+      _m_deallocate(_result, n);
+      throw e;
+    }
+  }
+
+  /**
+   * @brief range_constructor 에서 불린다.
+   * @tparam Integer
+   * @param n
+   * @param value
+   *
+   * range constructor 에서 iterator 받아서 내부 데이터를 초기화 해줄 때 사용하는 함수
+   */
+  template<class InputIterator>
+  void _m_init_range(InputIterator first, InputIterator last, false_type) {
+    // false_type -> input_iterator 일 때
+    for (; first != last; ++first) {
+      push_back(*first);
+    }
+  }
+
+  template<class ForwardIterator>
+  void _m_init_range(ForwardIterator first, ForwardIterator last, true_type) {
+    // forward iterator 일 때
+    size_type n = std::distance(first, last);
+    this->_m_start = _m_allocate(n);
+    this->_m_end_of_storage = this->_m_start + n;
+    this->_m_finish = std::uninitialized_copy(first, last, this->_m_start);
+  }
+
+
+  /* ****************************************************** */
   /*              Internal assign function                  */
   /* ****************************************************** */
 
-  template <class Integer>
+  template<class Integer>
   void _m_assign_dispatch(Integer n, Integer val, true_type) {
     _m_fill_assign(static_cast<size_type>(n), static_cast<value_type>(val));
   }
 
-  template <class InputIterator>
+  template<class InputIterator>
   void _m_assgin_dispatch(InputIterator first, InputIterator last, false_type) {
     typedef typename iterator_traits<InputIterator>::iterator_category _iterator_category;
     _m_assign_aux(first, last, _iterator_category());
@@ -567,12 +637,12 @@ class vector : protected _vector_base<T, Allocator> {
 
   template<class InputIterator>
   void _m_assign_aux(InputIterator first, InputIterator last, std::input_iterator_tag) {
-    // input iterator assign logic
+    // input iterator_traits assign logic
   }
 
   template<class FowardIterator>
   void _m_assign_aux(FowardIterator first, FowardIterator last, std::forward_iterator_tag) {
-    // foward iterator assign logic
+    // foward iterator_traits assign logic
   }
 
   // Called by assign(n, t)
@@ -580,13 +650,13 @@ class vector : protected _vector_base<T, Allocator> {
 
   }
   // _m_assign_dispatch -> assign(InputIter first, InputIter last) 에서 사용
-    // _m_assign_dispatch(Integer n, Integer val, true_type)
+  // _m_assign_dispatch(Integer n, Integer val, true_type)
   // _m_fill_assign -> assign(n, val) 에서 사용
 
   // assign 함수 구현
   // 1. assgin(size_type n, const value_type &val) -> _m_fill_assign(n, val) 로 바로 값 채워줌
   // 2. assign(InputIter first, InputIter last) -> _m_assign_dispatch(first, last, is_integer<InputIter>
-    // 2-1.InputIterator -> _m_assign_aux()
+  // 2-1.InputIterator -> _m_assign_aux()
 };
 
 }; // namespace ft
