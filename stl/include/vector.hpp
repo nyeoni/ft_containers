@@ -19,6 +19,7 @@
 
 // 나중에 지우기
 #include <vector>
+#include <iostream>
 
 namespace ft {
 
@@ -311,33 +312,25 @@ class vector : protected _vector_base<T, Allocator> {
   /* ****************************************************** */
 
   /**
-   *
-   * @return
+   * Returns iterator that points to the first element in the %vector
    */
   iterator begin() { return iterator(this->_m_start); };
   const_iterator begin() const { return const_iterator(this->_m_start); };
 
   /**
-   *
-   * @return
-   *
-   * iterator_traits 맨 뒤에 있는거 반환
+   * Returns iterator that points to the last element in the %vector
    */
   iterator end() { return iterator(this->_m_finish); };
   const_iterator end() const { return const_iterator(this->_m_finish); };
 
   /**
-   *
-   * @return
-   *
-   * Returns a reverse iterator_traits pointing to the last element in the vector (i.e., its reverse beginning)
+   * Returns reverse_iterator that points to one before the first element in the %vector
    */
   reverse_iterator rbegin() { return reverse_iterator(end()); }
   const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
 
   /**
-   *
-   * @return
+   * Returns reverse_iterator that points to the last element in the %vector
    */
   reverse_iterator rend() { return reverse_iterator(begin()); }
   const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
@@ -559,22 +552,47 @@ class vector : protected _vector_base<T, Allocator> {
   void insert(iterator position, InputIterator first, InputIterator last) {}
 
   /**
-   *
-   * @param position
-   * @return
+   * @brief  Remove element at given position.
+   * @param  position  Iterator pointing to element to be erased.
+   * @return  An iterator pointing to the next element (or end()).*
    *
    * 그 위치에 있는 함수 지워주는 함수
    * 다 지워주고 앞으로 땡겨주는 로직까지 처리해야함
-   * 리턴값이 좀 이상해서 확인요망 지워준 그 자리를 리턴
    */
-  iterator erase(iterator position) {}
-  iterator erase(iterator first, iterator last) {}
+  iterator erase(iterator position) {
+    pointer p = this->_m_start + (position - begin());
+    _m_destroy(p);
+    this->_m_finish = ft::copy(position + 1, end(), p);
+    return iterator(p);
+  }
+
+  /**
+   * @brief  Remove a range of elements.
+   * @param  first  Iterator pointing to the first element to be erased.
+   * @param  last  Iterator pointing to one past the last element to be
+   *               erased.
+   * @return  An iterator pointing to the element pointed to by @a last
+   *          prior to erasing (or end()).
+   */
+  iterator erase(iterator first, iterator last) {
+    pointer sp = this->_m_start + (first - begin());
+    pointer ep = this->_m_start + (last - begin());
+
+    for (pointer p = sp; p < ep; p++)
+      _m_destroy(p);
+    this->_m_finish = ft::copy(last, end(), sp);
+    return iterator(first);
+  }
 
   /**
    *
    * @param x
    */
-  void swap(vector &x) {}
+  void swap(vector &x) {
+    ft::swap(this->_m_start, x._m_start);
+    ft::swap(this->_m_finish, x._m_finish);
+    ft::swap(this->_m_end_of_storage, x._m_end_of_storage);
+  }
 
   /**
    * @brief clear
