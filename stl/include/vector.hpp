@@ -12,6 +12,7 @@
 #include <memory>
 #include <iterator>
 #include "type_traits.hpp"
+#include "algorithm.hpp"
 #include "iterator_traits.hpp"
 #include "reverse_iterator.hpp"
 #include "ftexcept.hpp"
@@ -394,7 +395,7 @@ class vector : protected _vector_base<T, Allocator> {
 
   /**
    * @brief 벡터 capacity 를 n 만큼 확보
-   * @param n
+   * @param n capacity size
    *
    * 벡터 capacity 가 n 이 되도록 만드는 함수
    * 용량이 증가 해야 하면 새로운 저장 공간을 재 할당 하고 기존 요소를 모두 새 공간 으로 복사
@@ -402,9 +403,11 @@ class vector : protected _vector_base<T, Allocator> {
    * @todo 첫번째로 구현하기
    */
   void reserve(size_type n) {
-    if (n < capacity()) {
-      vector v;
-      v._m_allocate(n);
+    // check %n length
+    _length_check(n);
+    // n 이 capacity 보다 크면 재할당 및 복사가 일어남
+    if (n > capacity()) {
+      _m_vector_realloc(n);
     }
   }
 
@@ -546,13 +549,13 @@ class vector : protected _vector_base<T, Allocator> {
   void clear() {}
 
  protected:
-  void _m_range_check(size_type n) const {
+  void _range_check(size_type n) const {
     if (n >= size()) {
       throw ft::out_of_range("vector");
     }
   }
 
-  void _m_length_check(size_type n) const {
+  void _length_check(size_type n) const {
     if (n > max_size()) {
       throw ft::length_error("vector");
     }
@@ -590,6 +593,25 @@ class vector : protected _vector_base<T, Allocator> {
       return _result;
     } catch (std::exception &e) {
       _m_deallocate(_result, n);
+      throw e;
+    }
+  }
+
+  void _m_vector_swap(vector &src) {
+    ft::swap(this->_m_start, src._m_start);
+    ft::swap(this->_m_finish, src._m_finish);
+    ft::swap(this->_m_end_of_storage, src._m_end_of_storage);
+  }
+
+  void _m_vector_realloc(size_t n) {
+    vector tmp;
+    try {
+      tmp._m_start = _m_allocate(n);
+      std::uninitialized_copy(this->_m_start, this->_m_end, tmp._m_start);
+      tmp._m_finish = tmp._m_start + n;
+      _m_vector_swap(tmp);
+    } catch (std::exception &e) {
+      _m_deallocate(tmp._m_start);
       throw e;
     }
   }
@@ -658,6 +680,11 @@ class vector : protected _vector_base<T, Allocator> {
   // 2. assign(InputIter first, InputIter last) -> _m_assign_dispatch(first, last, is_integer<InputIter>
   // 2-1.InputIterator -> _m_assign_aux()
 };
+
+template<class T, class Alloc>
+void swap(vector<T, Alloc> &x, vector<T, Alloc> &y) {
+
+}
 
 }; // namespace ft
 
