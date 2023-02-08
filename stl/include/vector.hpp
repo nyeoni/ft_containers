@@ -367,11 +367,22 @@ class vector : protected _vector_base<T, Allocator> {
    * @param val
    *
    * 벡터의 크기를 바꾸는 함수
-   * 새 크기가 기존 크기보다 작으면 초과분이 제거된다.
-   * 새 크기가 기존 크기보다 크면 재할당이 일어난다.
+   * 새 크기가 기존 크기보다 작으면 초과분이 "제거"된다.
+   * 새 크기가 기존 크기보다 크면 "재할당"이 일어난다.
    * 재할당 / 복사 가능
    */
-  void resize(size_type n, value_type val = value_type()) {}
+  void resize(size_type n, value_type val = value_type()) {
+    if (n > capacity()) {
+      _m_vector_realloc(n);
+      this->_m_finish = std::uninitialized_fill_n(this->_m_finish, n - size(), val);
+      this->_m_end_of_storage = this->_m_start + n;
+    }
+    if (n < size()) {
+      // erase from _m_start + n 부터 쭉 지우기
+    } else if (n > size()) {
+      this->_m_finish = std::uninitialized_fill_n(this->_m_finish, n - size(), val);
+    }
+  }
 
   /**
    * @brief the size of the storage space (vector allocated size)
@@ -400,7 +411,7 @@ class vector : protected _vector_base<T, Allocator> {
    * 벡터 capacity 가 n 이 되도록 만드는 함수
    * 용량이 증가 해야 하면 새로운 저장 공간을 재 할당 하고 기존 요소를 모두 새 공간 으로 복사
    * 재할당 / 복사 가능
-   * @todo 첫번째로 구현하기
+   * @todo test
    */
   void reserve(size_type n) {
     // check %n length
@@ -574,6 +585,31 @@ class vector : protected _vector_base<T, Allocator> {
   }
 
   /**
+ * @brief range_constructor 에서 불린다.
+ * @tparam Integer
+ * @param n
+ * @param value
+ *
+ * range constructor 에서 iterator 받아서 내부 데이터를 초기화 해줄 때 사용하는 함수
+ */
+  template<class InputIterator>
+  void _m_init_range(InputIterator first, InputIterator last, false_type) {
+    // false_type -> input_iterator 일 때
+    for (; first != last; ++first) {
+      push_back(*first);
+    }
+  }
+
+  template<class ForwardIterator>
+  void _m_init_range(ForwardIterator first, ForwardIterator last, true_type) {
+    // forward iterator 일 때
+    size_type n = std::distance(first, last);
+    this->_m_start = _m_allocate(n);
+    this->_m_end_of_storage = this->_m_start + n;
+    this->_m_finish = std::uninitialized_copy(first, last, this->_m_start);
+  }
+
+  /**
    *
    * @tparam ForwardIterator
    * @param n
@@ -616,30 +652,15 @@ class vector : protected _vector_base<T, Allocator> {
     }
   }
 
-  /**
-   * @brief range_constructor 에서 불린다.
-   * @tparam Integer
-   * @param n
-   * @param value
-   *
-   * range constructor 에서 iterator 받아서 내부 데이터를 초기화 해줄 때 사용하는 함수
-   */
-  template<class InputIterator>
-  void _m_init_range(InputIterator first, InputIterator last, false_type) {
-    // false_type -> input_iterator 일 때
-    for (; first != last; ++first) {
-      push_back(*first);
-    }
-  }
+  /* ****************************************************** */
+  /*              Internal resize function                  */
+  /* ****************************************************** */
 
   template<class ForwardIterator>
-  void _m_init_range(ForwardIterator first, ForwardIterator last, true_type) {
-    // forward iterator 일 때
-    size_type n = std::distance(first, last);
-    this->_m_start = _m_allocate(n);
-    this->_m_end_of_storage = this->_m_start + n;
-    this->_m_finish = std::uninitialized_copy(first, last, this->_m_start);
+  void _m_fill_element_from(T *p, size_type n, const value_type &val) {
+
   }
+
 
 
   /* ****************************************************** */
