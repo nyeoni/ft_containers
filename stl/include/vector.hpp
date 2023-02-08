@@ -526,7 +526,7 @@ class vector : protected _vector_base<T, Allocator> {
    */
   void push_back(const value_type &val) {
     if (this->_m_finish != this->_m_end_of_storage) {
-      _m_constructor(this->_m_finish, val);
+      _m_construct(this->_m_finish, val);
       ++this->_m_finish;
     } else {
       // 꽉 찼을 경우
@@ -573,15 +573,18 @@ class vector : protected _vector_base<T, Allocator> {
    *               erased.
    * @return  An iterator pointing to the element pointed to by @a last
    *          prior to erasing (or end()).
+   *
+   * @todo --ep, ep-- 확인해보기 -> test 케이스 더 확인해봐야함
    */
   iterator erase(iterator first, iterator last) {
     pointer sp = this->_m_start + (first - begin());
     pointer ep = this->_m_start + (last - begin());
 
-    for (pointer p = sp; p < ep; p++)
-      _m_destroy(p);
+    while (ep > sp) {
+      _m_destroy(--ep);
+    }
     this->_m_finish = ft::copy(last, end(), sp);
-    return iterator(first);
+    return iterator(ep);
   }
 
   /**
@@ -618,12 +621,26 @@ class vector : protected _vector_base<T, Allocator> {
   /*               Memory util function                     */
   /* ****************************************************** */
 
-  void _m_constructor(T *p, const T &element) {
+  void _m_construct(T *p, const T &element) {
     this->_m_data_allocator.construct(p, element);
   }
 
   void _m_destroy(T *p) {
     this->_m_data_allocator.destroy(p);
+  }
+
+  void _m_destroy_from_end(T *p) {
+    pointer _new_ep = _m_finish;
+    while (p != _new_ep) {
+      _m_destroy(--_new_ep);
+    }
+    this->_m_finish = _new_ep;
+  }
+
+  // 재할당 후 복사 할때 사용하는 메소드 -> _m_finish 를 바꿔줌
+  template<class InputIterator, class OutputIterator>
+  void _m_copy_elements(InputIterator first, InputIterator last, OutputIterator result) {
+    this->_m_finish = ft::copy(first, last, result);
   }
 
   /**
