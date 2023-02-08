@@ -54,6 +54,19 @@ bool lexicographical_compare(InputIterator1 first1, InputIterator1 last1,
   return (first2 != last2);
 }
 
+/**
+ * @brief Exchanges the values of a and b.
+ * @tparam T
+ * @param a
+ * @param b
+ */
+template<class T>
+void swap(T &a, T &b) {
+  T c(a);
+  a = b;
+  b = c;
+}
+
 }
 
 #endif //ALGORITHM_HPP_
