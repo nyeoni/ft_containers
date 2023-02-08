@@ -331,15 +331,15 @@ class vector : protected _vector_base<T, Allocator> {
    *
    * Returns a reverse iterator_traits pointing to the last element in the vector (i.e., its reverse beginning)
    */
-  reverse_iterator rbegin() {}
-  const_reverse_iterator rbegin() const {}
+  reverse_iterator rbegin() { return reverse_iterator(end()); }
+  const_reverse_iterator rbegin() const { return const_reverse_iterator(end()); }
 
   /**
    *
    * @return
    */
-  reverse_iterator rend() {}
-  const_reverse_iterator rend() const {}
+  reverse_iterator rend() { return reverse_iterator(begin()); }
+  const_reverse_iterator rend() const { return const_reverse_iterator(begin()); }
 
   /* ****************************************************** */
   /*                      Capacity                          */
