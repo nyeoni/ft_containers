@@ -123,25 +123,7 @@ struct has_iterator_category {
   static no test(...);
  public:
   enum { value = sizeof(test(T())) == sizeof(yes) };
-//  enum { value = sizeof(test(static_cast<T *>(0))) == sizeof(yes) };
 };
-//template<typename T>
-//struct has_iterator_category {
-// private:
-//  typedef char yes;
-//  typedef long no;
-//
-//  /**
-//   * @tparam U 들어오는 타입에 대한 추론을 하는 역할 (U *)
-//   * @return yes (char)
-//   */
-//  template<typename U>
-//  static yes test(U *, typename U::iterator_category * = 0);
-//
-//  static no test(...);
-// public:
-//  enum { value = sizeof(test(static_cast<T *>(0))) == sizeof(yes) };
-//};
 
 /**
  * @brief Traits class that identifies whether T is iterator or not
@@ -189,20 +171,43 @@ struct is_random_access_iterator :
     &&(is_same<typename T::iterator_category, std::random_access_iterator_tag>::value)> {
 };
 
-//template<typename T, typename U = is_iterator<T>>
-//struct is_random_access_iterator : public integral_constant<bool,
-//                                                            U::value && is_same<typename U::category,
-//                                                                                std::random_access_iterator_tag>::value> {
-//};
+// Template Specialization (for pointer)
 
-//typedef iterator_constant<bool, true> true_type;
-//typedef iterator_constant<bool, false> false_type;
+template<typename T>
+struct is_input_iterator<T *> :
+    public integral_constant<bool, is_iterator<T *>::value
+        && (is_same<typename iterator_traits<T *>::iterator_category, std::random_access_iterator_tag>::value)
+        || is_same<typename iterator_traits<T *>::iterator_category, std::bidirectional_iterator_tag>::value
+        || is_same<typename iterator_traits<T *>::iterator_category, std::forward_iterator_tag>::value
+        || is_same<typename iterator_traits<T *>::iterator_category, std::input_iterator_tag>::value> {
+};
 
-//template<class T>
-//struct is_iterator : public false_type {};
-//
-//template<>
-//struct is_iterator< : public true_type {};
+template<typename T>
+struct is_output_iterator<T *> :
+    public integral_constant<bool, is_iterator<T *>::value
+    &&(is_same<typename iterator_traits<T *>::iterator_category, std::output_iterator_tag>::value)> {
+};
+
+template<typename T>
+struct is_forward_iterator<T *> :
+    public integral_constant<bool, is_iterator<T *>::value
+        && (is_same<typename iterator_traits<T *>::iterator_category, std::random_access_iterator_tag>::value)
+        || is_same<typename iterator_traits<T *>::iterator_category, std::bidirectional_iterator_tag>::value
+        || is_same<typename iterator_traits<T *>::iterator_category, std::forward_iterator_tag>::value> {
+};
+
+template<typename T>
+struct is_bidirectional_iterator<T *> :
+    public integral_constant<bool, is_iterator<T *>::value
+        && (is_same<typename iterator_traits<T *>::iterator_category, std::random_access_iterator_tag>::value)
+        || is_same<typename iterator_traits<T *>::iterator_category, std::bidirectional_iterator_tag>::value> {
+};
+
+template<typename T>
+struct is_random_access_iterator<T *> :
+    public integral_constant<bool, is_iterator<T *>::value
+    &&(is_same<typename iterator_traits<T *>::iterator_category, std::random_access_iterator_tag>::value)> {
+};
 }
 
 #endif //TYPE_TRAITS_HPP_
