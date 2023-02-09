@@ -114,8 +114,8 @@ struct has_iterator_category {
    * @tparam U 들어오는 타입에 대한 추론을 하는 역할 (U *)
    * @return yes (char)
    */
-  template<typename U, typename = typename enable_if<!is_integral<U>::value>::type>
-  static yes test(const U, typename U::iterator_category * = 0);
+  template<typename U>
+  static yes test(const U, typename enable_if<!is_integral<U>::value>::type * = 0, typename U::iterator_category * = 0);
 
   template<typename U>
   static yes test(const U *, typename iterator_traits<U *>::iterator_category * = 0);
@@ -138,10 +138,10 @@ struct is_iterator<T, true> : public true_type {};
 template<typename T>
 struct is_input_iterator :
     public integral_constant<bool, is_iterator<T>::value
-        && (is_same<typename T::iterator_category, std::random_access_iterator_tag>::value)
-        || is_same<typename T::iterator_category, std::bidirectional_iterator_tag>::value
-        || is_same<typename T::iterator_category, std::forward_iterator_tag>::value
-        || is_same<typename T::iterator_category, std::input_iterator_tag>::value> {
+        && (is_same<typename T::iterator_category, std::random_access_iterator_tag>::value
+            || is_same<typename T::iterator_category, std::bidirectional_iterator_tag>::value
+            || is_same<typename T::iterator_category, std::forward_iterator_tag>::value
+            || is_same<typename T::iterator_category, std::input_iterator_tag>::value)> {
 };
 
 template<typename T>
@@ -153,16 +153,16 @@ struct is_output_iterator :
 template<typename T>
 struct is_forward_iterator :
     public integral_constant<bool, is_iterator<T>::value
-        && (is_same<typename T::iterator_category, std::random_access_iterator_tag>::value)
-        || is_same<typename T::iterator_category, std::bidirectional_iterator_tag>::value
-        || is_same<typename T::iterator_category, std::forward_iterator_tag>::value> {
+        && (is_same<typename T::iterator_category, std::random_access_iterator_tag>::value
+            || is_same<typename T::iterator_category, std::bidirectional_iterator_tag>::value
+            || is_same<typename T::iterator_category, std::forward_iterator_tag>::value)> {
 };
 
 template<typename T>
 struct is_bidirectional_iterator :
     public integral_constant<bool, is_iterator<T>::value
-        && (is_same<typename T::iterator_category, std::random_access_iterator_tag>::value)
-        || is_same<typename T::iterator_category, std::bidirectional_iterator_tag>::value> {
+        && (is_same<typename T::iterator_category, std::random_access_iterator_tag>::value
+            || is_same<typename T::iterator_category, std::bidirectional_iterator_tag>::value)> {
 };
 
 template<typename T>
@@ -176,10 +176,10 @@ struct is_random_access_iterator :
 template<typename T>
 struct is_input_iterator<T *> :
     public integral_constant<bool, is_iterator<T *>::value
-        && (is_same<typename iterator_traits<T *>::iterator_category, std::random_access_iterator_tag>::value)
-        || is_same<typename iterator_traits<T *>::iterator_category, std::bidirectional_iterator_tag>::value
-        || is_same<typename iterator_traits<T *>::iterator_category, std::forward_iterator_tag>::value
-        || is_same<typename iterator_traits<T *>::iterator_category, std::input_iterator_tag>::value> {
+        && (is_same<typename iterator_traits<T *>::iterator_category, std::random_access_iterator_tag>::value
+            || is_same<typename iterator_traits<T *>::iterator_category, std::bidirectional_iterator_tag>::value
+            || is_same<typename iterator_traits<T *>::iterator_category, std::forward_iterator_tag>::value
+            || is_same<typename iterator_traits<T *>::iterator_category, std::input_iterator_tag>::value)> {
 };
 
 template<typename T>
@@ -191,16 +191,16 @@ struct is_output_iterator<T *> :
 template<typename T>
 struct is_forward_iterator<T *> :
     public integral_constant<bool, is_iterator<T *>::value
-        && (is_same<typename iterator_traits<T *>::iterator_category, std::random_access_iterator_tag>::value)
-        || is_same<typename iterator_traits<T *>::iterator_category, std::bidirectional_iterator_tag>::value
-        || is_same<typename iterator_traits<T *>::iterator_category, std::forward_iterator_tag>::value> {
+        && (is_same<typename iterator_traits<T *>::iterator_category, std::random_access_iterator_tag>::value
+            || is_same<typename iterator_traits<T *>::iterator_category, std::bidirectional_iterator_tag>::value
+            || is_same<typename iterator_traits<T *>::iterator_category, std::forward_iterator_tag>::value)> {
 };
 
 template<typename T>
 struct is_bidirectional_iterator<T *> :
     public integral_constant<bool, is_iterator<T *>::value
-        && (is_same<typename iterator_traits<T *>::iterator_category, std::random_access_iterator_tag>::value)
-        || is_same<typename iterator_traits<T *>::iterator_category, std::bidirectional_iterator_tag>::value> {
+        && (is_same<typename iterator_traits<T *>::iterator_category, std::random_access_iterator_tag>::value
+            || is_same<typename iterator_traits<T *>::iterator_category, std::bidirectional_iterator_tag>::value)> {
 };
 
 template<typename T>

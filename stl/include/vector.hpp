@@ -275,9 +275,11 @@ class vector : protected _vector_base<T, Allocator> {
    * with each element constructed from its corresponding element in that range, in the same order.
    * InputIterator 가 iterator 일때만 들어오도록 설정
    */
-  template<class InputIterator, typename = typename ft::enable_if<ft::is_iterator<InputIterator>::value>::type>
-  vector(InputIterator first, InputIterator last,
-         const allocator_type &alloc = allocator_type()) : Base(alloc) {
+  template<class InputIterator>
+  vector(InputIterator first,
+         InputIterator last,
+         const allocator_type &alloc = allocator_type(),
+         typename ft::enable_if<ft::is_iterator<InputIterator>::value>::type * = 0) : Base(alloc) {
     _m_init_range(first, last, is_forward_iterator<InputIterator>());
   }
   /**
@@ -305,7 +307,12 @@ class vector : protected _vector_base<T, Allocator> {
    *
    * @todo 대입 연산자도 assign 을 이용해서 begin end 까지 할거기 때문에 assign 구현 후
    */
-  vector &operator=(const vector &x) {}
+  vector &operator=(const vector &x) {
+    if (this != &x) {
+      assign(x.begin(), x.end());
+    }
+    return *this;
+  }
 
   /* ****************************************************** */
   /*                      Iterators                         */
@@ -507,8 +514,10 @@ class vector : protected _vector_base<T, Allocator> {
    * 메모리 할당 후 값 초기화
    * @todo 3등 구현함수
    */
-  template<class InputIterator, typename = typename ft::enable_if<ft::is_iterator<InputIterator>::value>::type>
-  void assign(InputIterator first, InputIterator last) {
+  template<class InputIterator>
+  void assign(InputIterator first,
+              InputIterator last,
+              typename ft::enable_if<ft::is_iterator<InputIterator>::value>::type * = 0) {
     _m_assign_dispatch(first, last, is_integral<InputIterator>());
   }
 
@@ -565,8 +574,11 @@ class vector : protected _vector_base<T, Allocator> {
   }
   // range
   // position 에 [first, last) 값 넣기
-  template<class InputIterator, typename = typename ft::enable_if<ft::is_iterator<InputIterator>::value>::type>
-  void insert(iterator position, InputIterator first, InputIterator last) {
+  template<class InputIterator>
+  void insert(iterator position,
+              InputIterator first,
+              InputIterator last,
+              typename ft::enable_if<ft::is_iterator<InputIterator>::value>::type * = 0) {
     _m_insert_dispatch(position, first, last, is_integral<InputIterator>());
   }
 
@@ -877,9 +889,49 @@ class vector : protected _vector_base<T, Allocator> {
 
 }; // vector
 
+/**
+ *  @brief  Vector equality comparison.
+ *  @param  lhs  A %vector.
+ *  @param  rhs  A %vector of the same type as @a lhs.
+ *  @return  True iff the size and elements of the vectors are equal.
+ *
+ *  This is an equivalence relation.  It is linear in the size of the
+ *  vectors.  Vectors are considered equivalent if their sizes are equal,
+ *  and if corresponding elements compare equal.
+ */
+template<class T, class Alloc>
+bool operator==(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+  return lhs.size() == rhs.size() && ft::equal(lhs.begin(), lhs.end(), rhs.begin());
+}
+
+template<class T, class Alloc>
+bool operator!=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+  return !(lhs == rhs);
+}
+
+template<class T, class Alloc>
+bool operator<(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+  return ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+}
+
+template<class T, class Alloc>
+bool operator<=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+  return !(rhs < lhs);
+}
+
+template<class T, class Alloc>
+bool operator>(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+  return (rhs < lhs);
+}
+
+template<class T, class Alloc>
+bool operator>=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+  return !(lhs < rhs);
+}
+
 template<class T, class Alloc>
 void swap(vector<T, Alloc> &x, vector<T, Alloc> &y) {
-
+  x.swap(y);
 }
 
 }; // namespace ft
