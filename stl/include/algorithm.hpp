@@ -67,6 +67,25 @@ void swap(T &a, T &b) {
   b = c;
 }
 
+/**
+ * @brief Copies the elements in the range [first,last) into the range beginning at result.
+ * @tparam InputIterator
+ * @tparam OutputIterator
+ * @param first
+ * @param last
+ * @param result
+ * @return
+ */
+template<class InputIterator, class OutputIterator>
+OutputIterator copy(InputIterator first, InputIterator last, OutputIterator result) {
+  while (first != last) {
+    *result = *first;
+    ++result;
+    ++first;
+  }
+  return result;
+}
+
 }
 
 #endif //ALGORITHM_HPP_
