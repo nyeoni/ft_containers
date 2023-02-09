@@ -1,31 +1,31 @@
 /*
- * File: iterator.hpp
+ * File: iterator_traits.hpp
  * Project: ft_containers
  * Created Date: 2023/01/28
  * Author: nkim
  * Copyright (c) 2022 nkim
  */
 
-#ifndef ITERATOR_HPP_
-#define ITERATOR_HPP_
+#ifndef ITERATOR_TRAITS_HPP_
+#define ITERATOR_TRAITS_HPP_
 
 #include <array>
 #include <cstddef>
 
+namespace ft {
+
 /**
- * @class iterator
+ * @class iterator_traits
  * @namespace ft
  * @brief
- * std::iterator is the type trait class that provides uniform interface
+ * std::iterator_traits is the type trait class that provides uniform interface
  * to the properties of LegacyIterator types. This makes it possible to
  * implement algorithms only in terms of iterators.
  *
- * @see https://en.cppreference.com/w/cpp/iterator/iterator
+ * @see https://en.cppreference.com/w/cpp/iterator_traits/iterator_traits
  */
-
-namespace ft {
 template<typename Iter>
-struct iterator {
+struct iterator_traits {
   typedef typename Iter::difference_type difference_type;
   typedef typename Iter::value_type value_type;
   typedef typename Iter::pointer pointer;
@@ -34,7 +34,7 @@ struct iterator {
 };
 
 template<typename Tp>
-struct iterator<Tp *> {
+struct iterator_traits<Tp *> {
   typedef std::ptrdiff_t difference_type;
   typedef Tp value_type;
   typedef Tp *pointer;
@@ -43,7 +43,7 @@ struct iterator<Tp *> {
 };
 
 template<typename Tp>
-struct iterator<const Tp *> {
+struct iterator_traits<const Tp *> {
   typedef std::ptrdiff_t difference_type;
   typedef Tp value_type;
   typedef const Tp *pointer;
@@ -51,9 +51,7 @@ struct iterator<const Tp *> {
   typedef std::random_access_iterator_tag iterator_category;
 };
 
-template <typename Iter,
-
 }  // namespace ft
 
 
-#endif //ITERATOR_HPP_
+#endif //ITERATOR_TRAITS_HPP_
