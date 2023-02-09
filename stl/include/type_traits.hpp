@@ -114,13 +114,34 @@ struct has_iterator_category {
    * @tparam U 들어오는 타입에 대한 추론을 하는 역할 (U *)
    * @return yes (char)
    */
+  template<typename U, typename = typename enable_if<!is_integral<U>::value>::type>
+  static yes test(const U, typename U::iterator_category * = 0);
+
   template<typename U>
-  static yes test(U *, typename U::iterator_category * = 0);
+  static yes test(const U *, typename iterator_traits<U *>::iterator_category * = 0);
 
   static no test(...);
  public:
-  enum { value = sizeof(test(static_cast<T *>(0))) == sizeof(yes) };
+  enum { value = sizeof(test(T())) == sizeof(yes) };
+//  enum { value = sizeof(test(static_cast<T *>(0))) == sizeof(yes) };
 };
+//template<typename T>
+//struct has_iterator_category {
+// private:
+//  typedef char yes;
+//  typedef long no;
+//
+//  /**
+//   * @tparam U 들어오는 타입에 대한 추론을 하는 역할 (U *)
+//   * @return yes (char)
+//   */
+//  template<typename U>
+//  static yes test(U *, typename U::iterator_category * = 0);
+//
+//  static no test(...);
+// public:
+//  enum { value = sizeof(test(static_cast<T *>(0))) == sizeof(yes) };
+//};
 
 /**
  * @brief Traits class that identifies whether T is iterator or not

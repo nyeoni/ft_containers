@@ -59,6 +59,13 @@ TEST(IS_ITERATOR_TEST, IsIteratorTest) {
   class A {};
   SHOW(ft::is_iterator<A>::value);
   SHOW(ft::is_iterator<bool>::value);
+
+  SHOW(ft::is_iterator<int *>::value);
+}
+
+// is_forward_iterator
+TEST(IS_FORWARD_ITERATOR, IsForwardIteratorTest) {
+  SHOW(ft::is_forward_iterator<ft::_vector_iterator<int *>>::value);
 }
 
 // is_random_access_test
