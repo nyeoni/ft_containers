@@ -261,7 +261,7 @@ class vector : protected _vector_base<T, Allocator> {
    */
   explicit vector(size_type n, const value_type &val = value_type(),
                   const allocator_type &alloc = allocator_type()) : Base(n, alloc) {
-    this->_m_finish = std::uninitialized_fill_n(this->_m_start, n, val);
+    _m_fill_elements_n(this->_m_start, n, val);
   }
   /**
    * @brief range constructor
@@ -363,17 +363,18 @@ class vector : protected _vector_base<T, Allocator> {
    * 새 크기가 기존 크기보다 작으면 초과분이 "제거"된다.
    * 새 크기가 기존 크기보다 크면 "재할당"이 일어난다.
    * 재할당 / 복사 가능
+   * @todo test case 로 확인해보기
    */
   void resize(size_type n, value_type val = value_type()) {
     if (n > capacity()) {
-      _m_vector_realloc(n);
-      this->_m_finish = std::uninitialized_fill_n(this->_m_finish, n - size(), val);
-      this->_m_end_of_storage = this->_m_start + n;
+      _m_realloc(n);
+      _m_fill_elements_n(this->_m_start, n - size(), val);
     }
     if (n < size()) {
       // erase from _m_start + n 부터 쭉 지우기
+      erase(begin() + n, end());
     } else if (n > size()) {
-      this->_m_finish = std::uninitialized_fill_n(this->_m_finish, n - size(), val);
+      _m_fill_elements_n(this->_m_start + n, n - size(), val);
     }
   }
 
@@ -411,7 +412,7 @@ class vector : protected _vector_base<T, Allocator> {
     _length_check(n);
     // n 이 capacity 보다 크면 재할당 및 복사가 일어남
     if (n > capacity()) {
-      _m_vector_realloc(n);
+      _m_realloc(n);
     }
   }
 
@@ -507,7 +508,9 @@ class vector : protected _vector_base<T, Allocator> {
    * @todo 3등 구현함수
    */
   template<class InputIterator>
-  void assign(InputIterator first, InputIterator last) {}
+  void assign(InputIterator first, InputIterator last) {
+
+  }
 
   /**
    *
@@ -517,7 +520,9 @@ class vector : protected _vector_base<T, Allocator> {
    * 벡터 n 번 만큼 요소반복 해서 data 넣어 주기
    * 재할당 / 복사 가능
    */
-  void assign(size_type n, const value_type &val) {}
+  void assign(size_type n, const value_type &val) {
+    _m_fill_assign(n, val);
+  }
 
   /**
    *
@@ -529,7 +534,8 @@ class vector : protected _vector_base<T, Allocator> {
       _m_construct(this->_m_finish, val);
       ++this->_m_finish;
     } else {
-      // 꽉 찼을 경우
+      // 꽉 찼을 경
+
     }
   }
 
@@ -562,7 +568,7 @@ class vector : protected _vector_base<T, Allocator> {
   iterator erase(iterator position) {
     pointer p = this->_m_start + (position - begin());
     _m_destroy(p);
-    this->_m_finish = ft::copy(position + 1, end(), p);
+    _m_relocate(position + 1, end(), p);
     return iterator(p);
   }
 
@@ -580,10 +586,10 @@ class vector : protected _vector_base<T, Allocator> {
     pointer sp = this->_m_start + (first - begin());
     pointer ep = this->_m_start + (last - begin());
 
-    while (ep > sp) {
+    while (sp != ep) {
       _m_destroy(--ep);
     }
-    this->_m_finish = ft::copy(last, end(), sp);
+    _m_relocate(last, end(), sp);
     return iterator(ep);
   }
 
@@ -602,7 +608,7 @@ class vector : protected _vector_base<T, Allocator> {
    * 벡터의 모든 요소를 제거한다.
    * size 0 capacity 는 변하지 않는다.
    */
-  void clear() {}
+  void clear() { erase(begin(), end()); }
 
  protected:
   void _range_check(size_type n) const {
@@ -627,6 +633,7 @@ class vector : protected _vector_base<T, Allocator> {
 
   void _m_destroy(T *p) {
     this->_m_data_allocator.destroy(p);
+//    *p = NULL;
   }
 
   void _m_destroy_from_end(T *p) {
@@ -692,35 +699,48 @@ class vector : protected _vector_base<T, Allocator> {
     }
   }
 
-  void _m_vector_swap(vector &src) {
-    ft::swap(this->_m_start, src._m_start);
-    ft::swap(this->_m_finish, src._m_finish);
-    ft::swap(this->_m_end_of_storage, src._m_end_of_storage);
+  // first 부터 x 를 n 만큼 채워넣어준다.
+  // this->_m_finish += n 만큼 추가해준다. => first 에 들어오면 iterator 는 무조건 vector 의 iterator 여야 한다.
+  template<class ForwardIterator, class Size, class U>
+  void _m_fill_elements_n(ForwardIterator first, Size n, const U &x) {
+    std::uninitialized_fill_n(first, n, x);
+    this->_m_finish += n;
   }
 
-  void _m_vector_realloc(size_t n) {
-    vector tmp;
+  template<class InputIterator, class OutputIterator>
+  void _m_relocate(InputIterator first, InputIterator last, OutputIterator result) {
+    this->_m_finish = ft::copy(first, last, result);
+  }
+
+  void _m_realloc(size_t n) {
+    pointer _new_start;
     try {
-      tmp._m_start = _m_allocate(n);
-      std::uninitialized_copy(this->_m_start, this->_m_end, tmp._m_start);
-      tmp._m_finish = tmp._m_start + n;
-      _m_vector_swap(tmp);
+      _new_start = _m_allocate(n);
+      this->_m_finish = ft::copy(this->_m_start, this->_m_finish, _new_start);
+      _m_deallocate(this->_m_start);
+      this->_m_start = _new_start;
+      this->_m_end_of_storage = this->_m_start + n;
     } catch (std::exception &e) {
-      _m_deallocate(tmp._m_start);
+      _m_deallocate(_new_start);
       throw e;
     }
   }
 
-  /* ****************************************************** */
-  /*              Internal resize function                  */
-  /* ****************************************************** */
-
-  template<class ForwardIterator>
-  void _m_fill_element_from(T *p, size_type n, const value_type &val) {
-
+  // delete every elements and reinit vector
+  void _m_reinit(size_t n) {
+    pointer _new_start;
+    try {
+      clear();
+      _new_start = _m_allocate(n);
+      _m_deallocate(this->_m_start);
+      this->_m_start = _new_start;
+      this->_m_finish = this->_m_start;
+      this->_m_end_of_storage = this->_m_start + n;
+    } catch (std::exception &e) {
+      _m_deallocate(_new_start);
+      throw e;
+    }
   }
-
-
 
   /* ****************************************************** */
   /*              Internal assign function                  */
@@ -749,6 +769,13 @@ class vector : protected _vector_base<T, Allocator> {
 
   // Called by assign(n, t)
   void _m_fill_assign(size_type n, const value_type &val) {
+    if (n > capacity()) {
+      _m_reinit(n);
+      _m_fill_elements_n(this->_m_start, n, val);
+    } else {
+      clear();
+      _m_fill_elements_n(this->_m_start, n, val);
+    }
 
   }
   // _m_assign_dispatch -> assign(InputIter first, InputIter last) 에서 사용
