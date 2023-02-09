@@ -507,9 +507,9 @@ class vector : protected _vector_base<T, Allocator> {
    * 메모리 할당 후 값 초기화
    * @todo 3등 구현함수
    */
-  template<class InputIterator>
+  template<class InputIterator, typename = typename ft::enable_if<ft::is_iterator<InputIterator>::value>::type>
   void assign(InputIterator first, InputIterator last) {
-
+    _m_assign_dispatch(first, last, is_integral<InputIterator>());
   }
 
   /**
@@ -534,15 +534,18 @@ class vector : protected _vector_base<T, Allocator> {
       _m_construct(this->_m_finish, val);
       ++this->_m_finish;
     } else {
-      // 꽉 찼을 경
-
+      // 꽉 찼을 경우
+      // _m_insert_aux(end(), val);
     }
   }
 
   /**
    * 맨 뒤에 요소 삭제
    */
-  void pop_back() {}
+  void pop_back() {
+    // todo 확인해봐야함
+    _m_destroy_from_end(this->_m_finish - 1);
+  }
 
   /**
    *
@@ -552,10 +555,21 @@ class vector : protected _vector_base<T, Allocator> {
    *
    * @see https://legacy.cplusplus.com/reference/vector/vector/insert/
    */
-  iterator insert(iterator position, const value_type &val) {}
-  void insert(iterator position, size_type n, const value_type &val) {}
+  // single element
+  iterator insert(iterator position, const value_type &val) {
+    _m_insert_aux(position, val);
+  }
+  // fill
+  // position 에 n 만큼 val 넣기
+  void insert(iterator position, size_type n, const value_type &val) {
+    _m_fill_insert(position, n, val);
+  }
+  // range
+  // position 에 [first, last) 값 넣기
   template<class InputIterator>
-  void insert(iterator position, InputIterator first, InputIterator last) {}
+  void insert(iterator position, InputIterator first, InputIterator last) {
+    _m_insert_dispatch(position, first, last, is_integral<InputIterator>());
+  }
 
   /**
    * @brief  Remove element at given position.
@@ -633,7 +647,6 @@ class vector : protected _vector_base<T, Allocator> {
 
   void _m_destroy(T *p) {
     this->_m_data_allocator.destroy(p);
-//    *p = NULL;
   }
 
   void _m_destroy_from_end(T *p) {
@@ -642,12 +655,6 @@ class vector : protected _vector_base<T, Allocator> {
       _m_destroy(--_new_ep);
     }
     this->_m_finish = _new_ep;
-  }
-
-  // 재할당 후 복사 할때 사용하는 메소드 -> _m_finish 를 바꿔줌
-  template<class InputIterator, class OutputIterator>
-  void _m_copy_elements(InputIterator first, InputIterator last, OutputIterator result) {
-    this->_m_finish = ft::copy(first, last, result);
   }
 
   /**
@@ -675,30 +682,6 @@ class vector : protected _vector_base<T, Allocator> {
     this->_m_finish = std::uninitialized_copy(first, last, this->_m_start);
   }
 
-  /**
-   *
-   * @tparam ForwardIterator
-   * @param n
-   * @param first
-   * @param last
-   * @return
-   *
-   * _m_alloc_and_copy 함수는 n 만큼의 메모리 공간을 result 에 할당 받고
-   * [first, last) 만큼의 요소를 순회하면서 복사하고
-   * 복사한 새로운 포인터 result 를 반환한다.
-   */
-  template<class ForwardIterator>
-  pointer _m_allocate_and_copy(size_type n, ForwardIterator first, ForwardIterator last) {
-    pointer _result = _m_allocate(n);
-    try {
-      std::uninitialized_copy(first, last, _result);
-      return _result;
-    } catch (std::exception &e) {
-      _m_deallocate(_result, n);
-      throw e;
-    }
-  }
-
   // first 부터 x 를 n 만큼 채워넣어준다.
   // this->_m_finish += n 만큼 추가해준다. => first 에 들어오면 iterator 는 무조건 vector 의 iterator 여야 한다.
   template<class ForwardIterator, class Size, class U>
@@ -717,11 +700,11 @@ class vector : protected _vector_base<T, Allocator> {
     try {
       _new_start = _m_allocate(n);
       this->_m_finish = ft::copy(this->_m_start, this->_m_finish, _new_start);
-      _m_deallocate(this->_m_start);
+      _m_deallocate(this->_m_start, capacity());
       this->_m_start = _new_start;
       this->_m_end_of_storage = this->_m_start + n;
     } catch (std::exception &e) {
-      _m_deallocate(_new_start);
+      _m_deallocate(_new_start, n);
       throw e;
     }
   }
@@ -732,12 +715,12 @@ class vector : protected _vector_base<T, Allocator> {
     try {
       clear();
       _new_start = _m_allocate(n);
-      _m_deallocate(this->_m_start);
+      _m_deallocate(this->_m_start, capacity());
       this->_m_start = _new_start;
       this->_m_finish = this->_m_start;
       this->_m_end_of_storage = this->_m_start + n;
     } catch (std::exception &e) {
-      _m_deallocate(_new_start);
+      _m_deallocate(_new_start, n);
       throw e;
     }
   }
@@ -752,19 +735,31 @@ class vector : protected _vector_base<T, Allocator> {
   }
 
   template<class InputIterator>
-  void _m_assgin_dispatch(InputIterator first, InputIterator last, false_type) {
-    typedef typename iterator_traits<InputIterator>::iterator_category _iterator_category;
-    _m_assign_aux(first, last, _iterator_category());
+  void _m_assign_dispatch(InputIterator first, InputIterator last, false_type) {
+    _m_assign_aux(first, last, is_forward_iterator<InputIterator>());
   }
 
   template<class InputIterator>
-  void _m_assign_aux(InputIterator first, InputIterator last, std::input_iterator_tag) {
+  void _m_assign_aux(InputIterator first, InputIterator last, false_type) {
     // input iterator_traits assign logic
+    clear();
+    // @todo ++first 붙이는 이유 first++ 하는거 확인해보기
+    for (; first != last; first++) {
+      push_back(*first);
+    }
   }
 
   template<class FowardIterator>
-  void _m_assign_aux(FowardIterator first, FowardIterator last, std::forward_iterator_tag) {
+  void _m_assign_aux(FowardIterator first, FowardIterator last, true_type) {
     // foward iterator_traits assign logic
+    size_type _n = std::distance(first, last);
+    if (_n > capacity()) {
+      _m_reinit(_n);
+      this->_m_finish = std::uninitialized_copy(first, last, this->_m_start);
+    } else {
+      clear();
+      this->_m_finish = std::uninitialized_copy(first, last, this->_m_start);
+    }
   }
 
   // Called by assign(n, t)
@@ -776,7 +771,6 @@ class vector : protected _vector_base<T, Allocator> {
       clear();
       _m_fill_elements_n(this->_m_start, n, val);
     }
-
   }
   // _m_assign_dispatch -> assign(InputIter first, InputIter last) 에서 사용
   // _m_assign_dispatch(Integer n, Integer val, true_type)
@@ -786,6 +780,43 @@ class vector : protected _vector_base<T, Allocator> {
   // 1. assgin(size_type n, const value_type &val) -> _m_fill_assign(n, val) 로 바로 값 채워줌
   // 2. assign(InputIter first, InputIter last) -> _m_assign_dispatch(first, last, is_integer<InputIter>
   // 2-1.InputIterator -> _m_assign_aux()
+
+  /* ****************************************************** */
+  /*              Internal insert function                  */
+  /* ****************************************************** */
+
+  // range insert
+  template<class Integer>
+  void _m_insert_dispatch(iterator position, Integer n, Integer val, true_type) {
+    // integer 일 때
+    _m_fill_insert(position, static_cast<size_type>(n), static_cast<value_type>(val));
+  }
+
+  template<class InputIterator>
+  void _m_insert_dispatch(iterator position, InputIterator first, InputIterator last, false_type) {
+    // iterator 일 때
+    _m_range_insert(position, first, last, is_forward_iterator<InputIterator>());
+  }
+
+  template<class InputIterator>
+  void _m_range_insert(iterator position, InputIterator first, InputIterator last, false_type) {
+    // input_iterator 일 때
+  }
+
+  template<class ForwardIterator>
+  void _m_range_insert(iterator position, ForwardIterator first, ForwardIterator last, true_type) {
+    // forward_iterator 일 때
+
+  }
+
+  void _m_fill_insert(iterator position, size_type n, const value_type &val) {
+    // position 위치에 n 만틈 val 삽입해주기
+  }
+
+  // Called by insert(p, x)
+  void _m_insert_aux(iterator position, const value_type &val) {
+
+  }
 };
 
 template<class T, class Alloc>
