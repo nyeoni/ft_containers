@@ -154,9 +154,9 @@ class _vector_base {
   typedef Allocator allocator_type;
  protected:
   allocator_type _m_data_allocator;
-  T *_m_start;
-  T *_m_finish;
-  T *_m_end_of_storage;
+  T *_m_start; // pointer of first element
+  T *_m_finish; // pointer of last element
+  T *_m_end_of_storage; // pointer of last memory address + 1
 
  public:
   /**
@@ -296,7 +296,7 @@ class vector : protected _vector_base<T, Allocator> {
   // destroy only erases the elements
   // todo : 메모리 관련 함수 만들어서 그거 이용해서 소멸해보기
   // 벡터 내부의 요소들을 destory 해주는 소멸자
-  virtual ~vector() {};
+  virtual ~vector() { _m_destroy_from_end(this->_m_start); };
 
   /**
    * @brief Vector assignment operator.
@@ -534,8 +534,7 @@ class vector : protected _vector_base<T, Allocator> {
       _m_construct(this->_m_finish, val);
       ++this->_m_finish;
     } else {
-      // 꽉 찼을 경우
-      // _m_insert_aux(end(), val);
+      _m_insert_aux(end(), val);
     }
   }
 
@@ -557,7 +556,7 @@ class vector : protected _vector_base<T, Allocator> {
    */
   // single element
   iterator insert(iterator position, const value_type &val) {
-    _m_insert_aux(position, val);
+    return _m_insert_aux(position, val);
   }
   // fill
   // position 에 n 만큼 val 넣기
@@ -566,7 +565,7 @@ class vector : protected _vector_base<T, Allocator> {
   }
   // range
   // position 에 [first, last) 값 넣기
-  template<class InputIterator>
+  template<class InputIterator, typename = typename ft::enable_if<ft::is_iterator<InputIterator>::value>::type>
   void insert(iterator position, InputIterator first, InputIterator last) {
     _m_insert_dispatch(position, first, last, is_integral<InputIterator>());
   }
@@ -654,6 +653,7 @@ class vector : protected _vector_base<T, Allocator> {
     while (p != _new_ep) {
       _m_destroy(--_new_ep);
     }
+    // todo 이거 _m_finish 제대로 된 거 맞는지 확인하기
     this->_m_finish = _new_ep;
   }
 
@@ -680,6 +680,16 @@ class vector : protected _vector_base<T, Allocator> {
     this->_m_start = _m_allocate(n);
     this->_m_end_of_storage = this->_m_start + n;
     this->_m_finish = std::uninitialized_copy(first, last, this->_m_start);
+  }
+
+  // move mem data to x vector
+  void _m_move(vector &x) {
+    x._m_start = this->_m_start;
+    x._m_finish = this->_m_finish;
+    x._m_end_of_storage = this->_m_end_of_storage;
+    this->_m_start = NULL;
+    this->_m_finish = NULL;
+    this->_m_end_of_storage = NULL;
   }
 
   // first 부터 x 를 n 만큼 채워넣어준다.
@@ -801,23 +811,71 @@ class vector : protected _vector_base<T, Allocator> {
   template<class InputIterator>
   void _m_range_insert(iterator position, InputIterator first, InputIterator last, false_type) {
     // input_iterator 일 때
+    difference_type _pos_idx = position - begin();
+    for (; first != last; first++) {
+      // 재할당이 일어날 수 있음 -> position 이 무효화 됨
+      insert(begin() + _pos_idx++, first);
+    }
   }
 
   template<class ForwardIterator>
   void _m_range_insert(iterator position, ForwardIterator first, ForwardIterator last, true_type) {
     // forward_iterator 일 때
-
+    // input iterator 는 it - it 를 지원하지 않음
+    // std::distance 를 쓰면 If InputIterator is not at least a forward iterator, first and any iterators, pointers and references obtained from its value may be invalidated.
+    // 위와 같은 위험이 있음
+    size_type _n = size() + std::distance(first, last);
+    difference_type _pos_idx = position - begin();
+    if (_n > capacity()) {
+      vector _tmp;
+      _tmp._m_start = _tmp._m_allocate(_n);
+      _tmp._m_finish = std::uninitialized_copy(this->_m_start, this->_m_start + _pos_idx, _tmp._m_start);
+      _tmp._m_finish = std::uninitialized_copy(first, last, _tmp._m_finish);
+      _tmp._m_finish = std::uninitialized_copy(this->_m_start + _pos_idx, this->_m_finish, _tmp._m_finish);
+      _tmp._m_end_of_storage = _tmp._m_start + _n;
+      _tmp._m_move(*this);
+    } else {
+      pointer _copy_ep = this->_m_finish + _n;
+      pointer _copy_sp = this->_m_start + _pos_idx;
+      while (_copy_ep != _copy_sp) {
+        *_copy_ep = *(_copy_ep - _n);
+        _copy_ep--;
+      }
+      this->_m_finish += _n;
+      std::uninitialized_copy(first, last, _copy_sp);
+    }
   }
 
-  void _m_fill_insert(iterator position, size_type n, const value_type &val) {
+  iterator _m_fill_insert(iterator position, size_type n, const value_type &val) {
     // position 위치에 n 만틈 val 삽입해주기
+    size_type _n = size() + n;
+    difference_type _pos_idx = position - begin();
+    if (_n > capacity()) {
+      vector _tmp;
+      _tmp._m_start = _tmp._m_allocate(_n);
+      _tmp._m_finish = std::uninitialized_copy(this->_m_start, this->_m_start + _pos_idx, _tmp._m_start);
+      _tmp._m_fill_elements_n(_tmp._m_finish, n, val);
+      _tmp._m_finish = std::uninitialized_copy(this->_m_start + _pos_idx, this->_m_finish, _tmp._m_finish);
+      _tmp._m_end_of_storage = _tmp._m_start + _n;
+      _tmp._m_move(*this);
+    } else {
+      pointer _copy_ep = this->_m_finish + n;
+      pointer _copy_sp = this->_m_start + _pos_idx;
+      while (_copy_ep != _copy_sp) {
+        *_copy_ep = *(_copy_ep - n);
+        _copy_ep--;
+      }
+      _m_fill_elements_n(_copy_sp, n, val);
+    }
+    return iterator(this->_m_start + _pos_idx);
   }
 
   // Called by insert(p, x)
-  void _m_insert_aux(iterator position, const value_type &val) {
-
+  iterator _m_insert_aux(iterator position, const value_type &val) {
+    return _m_fill_insert(position, 1, val);
   }
-};
+
+}; // vector
 
 template<class T, class Alloc>
 void swap(vector<T, Alloc> &x, vector<T, Alloc> &y) {
