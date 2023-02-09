@@ -1,8 +1,8 @@
 # ft_containers
 
-## convention
+## Environment
 
-### clion
+### Convention
 
 - `typedef` 한 type 의 타입명 앞에는 `_` 쓰면 안됌.
 
@@ -11,6 +11,11 @@
 - 메모리 관련 함수 / 변수 `_m_name`
 - 기본적으로 다 `snake_case`
 - google style guide link : http://jongwook.kim/google-styleguide/trunk/cppguide.xml
+
+### Unit Test
+
+- CPP googletest
+- http://google.github.io/googletest/primer.html
 
 ## iterator_traits
 
@@ -90,14 +95,14 @@ void uninitialized_fill(For, For, const T&);
 - `uninitialized_fill_n`
     - 메모리 공간에 n 만큼 val 값을 채워줌
 
-# RAII
+## RAII
 
 - `RAII` 는 **생성자에서 자원을 획득하고 해당 소멸자에서 해제하는 것을 말한다.**
 - 메모리 누수, 교착 상태, 스레드 종료 등의 예상치 못한 문제들은 리소스 범위를 벗어나면 문제가 발생하게 된다.
 - 리소스는 힙 메모리, 파일, 소켓, 뮤텍스 등을 가리킨다.
 - 생성자에서 리소스를 획득하고 해당 소멸자에서 해제하면 리소스 수명이 개체 수명에 바인딩되므로 더 이상 리소스를 획득할 때마다 명시적으로 해제해야한다는 것을 기억할 필요가 없게 된다.
 
-# template 특수화
+## template 특수화
 
 `template 특수화` 란 특정한 템플릿 매개변수를 받을 때에 대한 코드를 커스터 마이즈 한 것이다.
 
@@ -114,7 +119,18 @@ Equals (float lhs, float rhs) {
 }
 ```
 
-## SIFNAE
+### 포인터 타입에 대한 특수화
+
+```c++
+template<typename T>
+class A {};
+
+// 포인터 타입에 대해서만 특수화
+template<typename T>
+class A<T *> {};
+```
+
+### SIFNAE
 
 - **Substitution Failure Is Not An Error 의 약자**
 - **치환 실패는 오류가 아니다** 라는 뜻으로 **템플릿 치환 후에 만들어진 식이 문법적으로 맞지 않는다면, 컴파일 오류를 발생 시키는 대신 단수히 함수의 오버로딩 후보군에서 제외만 시키게 된다.**
@@ -122,7 +138,7 @@ Equals (float lhs, float rhs) {
 - `SIFNAE` 를 적극적으로 활용할 수 있도록 하는 메타 템플릿 함수의 대표적인 예시로 `enable_if` 가 있다.
 - 치환을 시도 할 때, `SIFNAE` 에 의해 모든 경우에 수가 오버로딩 후보군에서 제외 되었을 때는 `no matching function for call` 컴파일 오류가 뜨게 된다.
 
-# type_traits
+## type_traits
 
 type_traits 헤더 안에는 템플릿 메타 함수들이 구현되어 있다. 템플릿 메타함수란 사실 함수는 아니지만 마치 함수 처럼 동작하는 템플릿 클래스들을 이야기 한다. 템플릿 함수는 보값에 대한 연산을 수행하는 것이
 아니라 타입에 대한 연산을 수행한다.
@@ -168,7 +184,7 @@ type_traits 헤더 안에는 템플릿 메타 함수들이 구현되어 있다. 
     
     ```
 
-# vector
+## vector
 
 `vector` 는 크기가 변경될 수 있는 배열을 나타내는 `sequence container` 이다. 배열과 마찬가지로 벡터는 요소에 대해 연속적인 저장 위치를 사용한다.
 그러나 배열과 다르게 메모리 공간이 컨테이너에 의해 자동으로 처리되므로 크기가 동적으로 변경될 수 있다.
@@ -184,8 +200,21 @@ type_traits 헤더 안에는 템플릿 메타 함수들이 구현되어 있다. 
     - vector 클래스의 힙 메모리 리소스 관리 담당
     - RAII 패턴을 적용해서 벡터의 리소스를 할당하고 소멸자를 통해 전체 리소스를 해제해주는 클래스
 
-# Reference
+### insert
 
-https://woo-dev.tistory.com/51
-https://medium.com/swlh/what-is-raii-e016d00269f9
-https://modoocode.com/295
+      // reinit ?
+      // pos - 1 까지 복사
+      // pos 에 val 넣기
+      // pos + 1 부터 뒤로 땡겨서 복사하기
+      // 아예 처음부터 생성하는게 좋을 수도 -> swap 으로 하자
+      // 1. swap
+      //
+      // 2. realloc
+      // - 새로운 vector 생성 -pos -1 까지 기존 벡터에서 값 복사 -val 값 넣기 -pos + 1 부터 값 복사 // 기존 벡터 free
+
+## Reference
+
+- https://woo-dev.tistory.com/51
+- https://medium.com/swlh/what-is-raii-e016d00269f9
+- https://modoocode.com/295
+- http://egloos.zum.com/sweeper/v/2998778
