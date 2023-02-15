@@ -160,5 +160,7 @@ fabric.properties
 build/
 build/*
 
+stl/include/containers_test
+
 # exec files
 ft_container_test
