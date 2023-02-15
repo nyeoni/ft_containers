@@ -12,20 +12,22 @@
 #include <exception>
 
 namespace ft {
-class out_of_range : public std::exception {
+class out_of_range : public std::out_of_range {
+  typedef std::out_of_range base_except;
   const char *_target;
  public:
-  out_of_range(const char *target) throw(): _target(target) {}
+  out_of_range(const char *target) throw(): base_except(target), _target(target) {}
 
   const char *what() const throw() {
     return _target;
   }
 };
 
-class length_error : public std::exception {
+class length_error : public std::length_error {
+  typedef std::length_error base_except;
   const char *_target;
  public:
-  length_error(const char *target) throw(): _target(target) {}
+  length_error(const char *target) throw(): base_except(target), _target(target) {}
 
   const char *what() const throw() {
     return _target;
