@@ -19,6 +19,11 @@ namespace ft {
  */
 template<class T, class Container = vector<T> >
 class stack {
+  template<class T1, class Container1>
+  friend bool operator==(const stack<T1, Container1> &lhs, const stack<T1, Container1> &rhs);
+
+  template<class T1, class Container1>
+  friend bool operator<(const stack<T1, Container1> &lhs, const stack<T1, Container1> &rhs);
  public:
   typedef typename Container::value_type value_type;
   typedef typename Container::reference reference;
@@ -81,6 +86,36 @@ class stack {
     _c.pop_back();
   }
 };
+
+template<class T, class Container>
+bool operator==(const stack<T, Container> &lhs, const stack<T, Container> &rhs) {
+  return lhs._c == rhs._c;
+}
+
+template<class T, class Container>
+bool operator<(const stack<T, Container> &lhs, const stack<T, Container> &rhs) {
+  return lhs._c < rhs._c;
+}
+
+template<class T, class Container>
+bool operator!=(const stack<T, Container> &lhs, const stack<T, Container> &rhs) {
+  return !(lhs._c == rhs._c);
+}
+
+template<class T, class Container>
+bool operator>(const stack<T, Container> &lhs, const stack<T, Container> &rhs) {
+  return rhs._c < lhs._c;
+}
+
+template<class T, class Container>
+bool operator<=(const stack<T, Container> &lhs, const stack<T, Container> &rhs) {
+  return !(rhs._c < lhs._c);
+}
+
+template<class T, class Container>
+bool operator>=(const stack<T, Container> &lhs, const stack<T, Container> &rhs) {
+  return !(lhs._c < rhs._c);
+}
 } // namespace ft
 
 #endif //STACK_HPP_
