@@ -92,7 +92,247 @@ class map {
    * Constructs a container with a copy of each of the elements in x.
    */
   map(const map &x) : _m_tree(x._m_tree) {}
+
+  /**
+   * @brief Destroys the container object
+   *
+   * This destroys all container elements, and deallocates all the storage capacity allocated by the map container using its allocator.
+   */
+  ~map() {}
+
+  /**
+   *  @brief  Map assignment operator.
+   *  @param  x  A %map of identical element and allocator types.
+   *
+   *  All the elements of @a x are copied, but unlike the copy constructor,
+   *  the allocator object is not copied.
+   */
+  map &operator=(const map &x) {
+    _m_tree = x._m_tree;
+    return *this;
+  }
+
+  // Get a copy of the memory allocation object.
+  allocator_type
+  get_allocator() const { return _m_tree.get_allocator(); }
+
+  /* ****************************************************** */
+  /*                      Iterators                         */
+  /* ****************************************************** */
+
+  /**
+   * Returns iterator that points to the first element in the %vector
+   */
+  iterator begin() { return _m_tree.begin(); };
+  const_iterator begin() const { return _m_tree.begin(); };
+
+  /**
+   * Returns iterator that points to the last element in the %vector
+   */
+  iterator end() { return _m_tree.end(); };
+  const_iterator end() const { return _m_tree.end(); };
+
+  /**
+   * Returns reverse_iterator that points to one before the first element in the %vector
+   */
+  reverse_iterator rbegin() { return _m_tree.rbegin(); }
+  const_reverse_iterator rbegin() const { return _m_tree.rbegin(); }
+
+  /**
+   * Returns reverse_iterator that points to the last element in the %vector
+   */
+  reverse_iterator rend() { return _m_tree.rend(); }
+  const_reverse_iterator rend() const { return _m_tree.rend(); }
+
+  /* ****************************************************** */
+  /*                      Capacity                          */
+  /* ****************************************************** */
+
+  /**
+   * @brief Returns the number of elements in the %vector
+   * @return the number of elements
+   */
+  size_type size() const { return _m_tree.size(); }
+
+  /**
+   * @brief Returns the size() of the largest possible %vector.
+   * @return size of largest possible %vector
+   *
+   * Returns the maximum number of elements that the vector can hold.
+   * allocator 의 max_size 임 그거 리턴하면 됨
+   */
+  size_type max_size() const { return _m_tree.max_size(); }
+
+  /**
+   * @brief Returns true if the %vector is empty.
+   * @return true : empty, false : not empty
+   *
+   * 벡터가 비어있는지 확인 size 가 0인지 확인
+   */
+  bool empty() const { return _m_tree.empty();; }
+
+  /* ****************************************************** */
+  /*                   Element access                       */
+  /* ****************************************************** */
+
+  /**
+   * @brief If %k matches the key of an element in the container, the function returns a reference to its mapped value.
+   * @param key
+   * @return
+   *
+   * 만약 key 가 없다면 insert
+   * 있다면 값 return
+   */
+  mapped_type &operator[](const key_type &key) {}
+
+  /* ****************************************************** */
+  /*                      Modifiers                          */
+  /* ****************************************************** */
+
+  // insert
+  // single element
+  pair<iterator, bool> insert(const value_type &val) {
+    // _m_tree.insert_unique(val) 밑에 insert 함수도 각 overlaod 함수에 맞는 insert_unique 함수로 구현되어 있음
+    _m_tree.insert_unique(val);
+  }
+  // with hint
+  iterator insert(iterator position, const value_type &val) {
+    _m_tree.insert_unique(position, val);
+  }
+  // range
+  template<class InputIterator>
+  void insert(InputIterator first, InputIterator last) {
+    _m_tree.insert_unique(first, last);
+  }
+
+  // erase
+  void erase(iterator position) {
+    _m_tree.erase(position);
+  }
+  size_type erase(const key_type &key) {
+    _m_tree.erase(key);
+  }
+  void erase(iterator first, iterator last) {
+    _m_tree.erase(first, last);
+  }
+
+  // swap
+  void swap(map &x) {
+    _m_tree.swap(x);
+  }
+
+  // clear
+  void clear() {
+    _m_tree.clear();
+  }
+
+  /* ****************************************************** */
+  /*                      Observers                         */
+  /* ****************************************************** */
+
+  // key_comp
+  /**
+   * @brief Returns a copy of the comparison object used by the container to compare keys
+   * @return
+   */
+  key_compare key_comp() const { return _m_tree.key_comp(); }
+
+  /**
+   * @brief Returns a comparsion object that can be used to compare two elements to get whether the key of th first one goes before the second
+   * @return
+   *
+   * mymap.value_comp()(*it, begin()) 이런식으로 쓸 수 있음
+   */
+  value_compare value_comp() const { return value_compare(_m_tree.key_comp()); }
+
+  /* ****************************************************** */
+  /*                      Operations                        */
+  /* ****************************************************** */
+
+  /**
+   * @brief Searches the container for an element with a key equal to k and returns an iterator to it if found, otherwise returns map::end
+   * @param key
+   * @return
+   */
+  iterator find(const key_type &k) {}
+  const_iterator find(const key_type &k) const {}
+
+  /**
+   * @brief Searches the container for elements with a key equal to k and returns the number of matches
+   * @param k
+   * @return 1 if the container contains an element whose key is equivalent to k, or zero otherwise.
+   */
+  size_type count(const key_type &k) const {}
+
+  /**
+   * @brief
+   * @param k
+   * @return
+   *
+   * Returns an iterator pointing to the first element in the container whose key is not considered to go before k
+   * key_comp 를 사용하여 구현한다.
+   */
+  iterator lower_bound(const key_type &k) {}
+  const_iterator lower_bound(const key_type &k) const {}
+
+  /**
+   * @brief Returns an iterator pointing to the first element in the container whose key is considered to go after k.
+   * @param k
+   * @return
+   */
+  iterator upper_bound(const key_type &k) {}
+  const_iterator upper_bound(const key_type &k) const {}
+
+  /**
+   * @brief Returns the bounds of a range that includes all the elements in the container which have a key equivalent to k.
+   * @param k
+   * @return
+   */
+  pair<const_iterator, const_iterator> equal_range(const key_type &k) const {}
+  pair<iterator, iterator> equal_range(const key_type &k) {}
 };
+
+template<class Key, class T, class Compare, class Alloc>
+bool operator==(const map<Key, T, Compare, Alloc> &lhs,
+                const map<Key, T, Compare, Alloc> &rhs) {
+
+}
+
+template<class Key, class T, class Compare, class Alloc>
+bool operator!=(const map<Key, T, Compare, Alloc> &lhs,
+                const map<Key, T, Compare, Alloc> &rhs) {
+
+}
+
+template<class Key, class T, class Compare, class Alloc>
+bool operator<(const map<Key, T, Compare, Alloc> &lhs,
+               const map<Key, T, Compare, Alloc> &rhs) {
+
+}
+
+template<class Key, class T, class Compare, class Alloc>
+bool operator<=(const map<Key, T, Compare, Alloc> &lhs,
+                const map<Key, T, Compare, Alloc> &rhs) {
+
+}
+
+template<class Key, class T, class Compare, class Alloc>
+bool operator>(const map<Key, T, Compare, Alloc> &lhs,
+               const map<Key, T, Compare, Alloc> &rhs) {
+
+}
+
+template<class Key, class T, class Compare, class Alloc>
+bool operator>=(const map<Key, T, Compare, Alloc> &lhs,
+                const map<Key, T, Compare, Alloc> &rhs) {
+
+}
+
+// swap
+template<class Key, class T, class Compare, class Alloc>
+void swap(map<Key, T, Compare, Alloc> &x, map<Key, T, Compare, Alloc> &y) {
+  
+}
 
 } // namespace ft
 
