@@ -48,9 +48,9 @@ class _vector_iterator : public std::iterator<std::random_access_iterator_tag,
 
   // constructor
   _vector_iterator() : _it() {}
-  explicit _vector_iterator(const Iter &it) : _it(it) {}
+  _vector_iterator(const Iter &it) : _it(it) {}
   template<typename U>
-  explicit _vector_iterator(const _vector_iterator<U> &u) : _it(u.base()) {}
+  _vector_iterator(const _vector_iterator<U> &u) : _it(u.base()) {}
 
   // member functions
   iterator_type base() const { return _it; }
@@ -109,7 +109,7 @@ bool operator!=(const _vector_iterator<Iter1> &lhs, const _vector_iterator<Iter2
 }
 template<class Iter1, class Iter2>
 bool operator<(const _vector_iterator<Iter1> &lhs, const _vector_iterator<Iter2> &rhs) {
-  return lhs.base() > rhs.base();
+  return lhs.base() < rhs.base();
 }
 template<class Iter1, class Iter2>
 bool operator<=(const _vector_iterator<Iter1> &lhs, const _vector_iterator<Iter2> &rhs) {
@@ -132,9 +132,9 @@ _vector_iterator<Iter> operator+(typename _vector_iterator<Iter>::difference_typ
 } // n + rit
 
 // operator- (_vector_iterator)
-template<class Iter>
-typename _vector_iterator<Iter>::difference_type operator-(const _vector_iterator<Iter> &lhs,
-                                                           const _vector_iterator<Iter> &rhs) {
+template<class Iter1, class Iter2>
+typename _vector_iterator<Iter1>::difference_type operator-(const _vector_iterator<Iter1> &lhs,
+                                                            const _vector_iterator<Iter2> &rhs) {
   return lhs.base() - rhs.base();
 } // iter1 - iter2
 
@@ -373,15 +373,10 @@ class vector : protected _vector_base<T, Allocator> {
    * @todo test case 로 확인해보기
    */
   void resize(size_type n, value_type val = value_type()) {
-    if (n > capacity()) {
-      _m_realloc(n);
-      _m_fill_elements_n(this->_m_start, n - size(), val);
-    }
     if (n < size()) {
-      // erase from _m_start + n 부터 쭉 지우기
       erase(begin() + n, end());
-    } else if (n > size()) {
-      _m_fill_elements_n(this->_m_start + n, n - size(), val);
+    } else {
+      insert(end(), n - size(), val);
     }
   }
 

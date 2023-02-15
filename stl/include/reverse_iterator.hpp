@@ -45,14 +45,14 @@ class reverse_iterator : public std::iterator<typename iterator_traits<Iter>::it
    * initialization constructor
    * @param it iterator_traits
    */
-  explicit reverse_iterator(Iter it) : current(it) {}
+  reverse_iterator(Iter it) : current(it) {}
   /**
    * copy constructor
    * @tparam U Iterator
    * @param u reverse_iterator
    */
   template<typename U>
-  explicit reverse_iterator(const reverse_iterator<U> &u) : current(u.base()) {} // copy
+  reverse_iterator(const reverse_iterator<U> &u) : current(u.base()) {} // copy
 
   // member functions
   iterator_type base() const { return current; }
@@ -116,15 +116,15 @@ bool operator<(const reverse_iterator<Iter1> &lhs, const reverse_iterator<Iter2>
 }
 template<class Iter1, class Iter2>
 bool operator<=(const reverse_iterator<Iter1> &lhs, const reverse_iterator<Iter2> &rhs) {
-  return lhs.base() <= rhs.base();
+  return lhs.base() >= rhs.base();
 }
 template<class Iter1, class Iter2>
 bool operator>(const reverse_iterator<Iter1> &lhs, const reverse_iterator<Iter2> &rhs) {
-  return lhs.base() > rhs.base();
+  return lhs.base() < rhs.base();
 }
 template<class Iter1, class Iter2>
 bool operator>=(const reverse_iterator<Iter1> &lhs, const reverse_iterator<Iter2> &rhs) {
-  return lhs.base() >= rhs.base();
+  return lhs.base() <= rhs.base();
 }
 
 // operator+ (reverse_iterator)
@@ -135,9 +135,9 @@ reverse_iterator<Iter> operator+(typename reverse_iterator<Iter>::difference_typ
 } // n + rit
 
 // operator- (reverse_iterator)
-template<class Iter>
-typename reverse_iterator<Iter>::difference_type operator-(const reverse_iterator<Iter> &lhs,
-                                                           const reverse_iterator<Iter> &rhs) {
+template<class Iter1, class Iter2>
+typename reverse_iterator<Iter1>::difference_type operator-(const reverse_iterator<Iter1> &lhs,
+                                                            const reverse_iterator<Iter2> &rhs) {
   return rhs.base() - lhs.base();
 }
 
