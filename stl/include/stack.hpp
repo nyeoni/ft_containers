@@ -97,24 +97,34 @@ bool operator<(const stack<T, Container> &lhs, const stack<T, Container> &rhs) {
   return lhs._c < rhs._c;
 }
 
+/**
+ * @brief Stack ordering relation
+ * @tparam T type
+ * @tparam Container container
+ * @param lhs stack1
+ * @param rhs stack2
+ * @return bool
+ *
+ * 위의 == 와 < 연산자를 사용하여 구현한 관계연산자 오버라이딩
+ */
 template<class T, class Container>
 bool operator!=(const stack<T, Container> &lhs, const stack<T, Container> &rhs) {
-  return !(lhs._c == rhs._c);
+  return !(lhs == rhs);
 }
 
 template<class T, class Container>
 bool operator>(const stack<T, Container> &lhs, const stack<T, Container> &rhs) {
-  return rhs._c < lhs._c;
+  return rhs < lhs;
 }
 
 template<class T, class Container>
 bool operator<=(const stack<T, Container> &lhs, const stack<T, Container> &rhs) {
-  return !(rhs._c < lhs._c);
+  return !(rhs < lhs);
 }
 
 template<class T, class Container>
 bool operator>=(const stack<T, Container> &lhs, const stack<T, Container> &rhs) {
-  return !(lhs._c < rhs._c);
+  return !(lhs < rhs);
 }
 } // namespace ft
 
