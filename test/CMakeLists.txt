@@ -10,8 +10,8 @@ FetchContent_MakeAvailable(googletest)
 
 # Add test files
 # file 나중에 사용할 것
-file(GLOB TEST_FILES *.cpp)
-add_executable(ft_container_test type_traits_test.cpp vector_test.cpp)
+add_executable(ft_container_test type_traits_test.cpp map_test.cpp tree_test.cpp)
 target_compile_options(ft_container_test PRIVATE -std=c++98 -Wall -Wextra -Werror)
+#target_compile_options(ft_container_test PRIVATE -std=c++98)
 
-target_link_libraries(ft_container_test PRIVATE ft_container_lib gtest gmock gtest_main)
+target_link_libraries(ft_container_test PUBLIC ft_container_lib PRIVATE gtest gmock gtest_main)
