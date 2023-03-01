@@ -12,13 +12,14 @@
 #include <functional>
 #include "pair.hpp"
 #include "function.hpp"
+#include "tree.hpp"
 
 // 지워야함
 #include <map>
 
 namespace ft {
 
-template<class Key, class T, class Compare = std::less<Key>, class Alloc = std::allocator<ft::pair<const Key, T> >>
+template<class Key, class T, class Compare = std::less<Key>, class Alloc = std::allocator<ft::pair<const Key, T> > >
 class map {
  public:
   typedef Key key_type;
@@ -83,7 +84,9 @@ class map {
   map(InputIterator first,
       InputIterator last,
       const key_compare &comp = key_compare(),
-      const allocator_type &alloc = allocator_type()) {}
+      const allocator_type &alloc = allocator_type()) : _m_tree(comp, alloc) {
+    _m_tree.insert_unique(first, last);
+  }
 
   /**
    * @brief Map Copy constructor
@@ -171,6 +174,9 @@ class map {
    */
   bool empty() const { return _m_tree.empty();; }
 
+  void test() { _m_tree.printBT(); }
+  void test() const { _m_tree.printBT(); }
+
   /* ****************************************************** */
   /*                   Element access                       */
   /* ****************************************************** */
@@ -183,7 +189,13 @@ class map {
    * 만약 key 가 없다면 insert
    * 있다면 값 return
    */
-  mapped_type &operator[](const key_type &key) {}
+  mapped_type &operator[](const key_type &k) {
+    iterator _i = lower_bound(k);
+    if (_i == end() || key_comp()(k, (*_i).first)) {
+      _i = insert(_i, value_type(k, mapped_type()));
+    }
+    return (*_i).second;
+  }
 
   /* ****************************************************** */
   /*                      Modifiers                          */
@@ -193,11 +205,11 @@ class map {
   // single element
   pair<iterator, bool> insert(const value_type &val) {
     // _m_tree.insert_unique(val) 밑에 insert 함수도 각 overlaod 함수에 맞는 insert_unique 함수로 구현되어 있음
-    _m_tree.insert_unique(val);
+    return _m_tree.insert_unique(val);
   }
   // with hint
   iterator insert(iterator position, const value_type &val) {
-    _m_tree.insert_unique(position, val);
+    return _m_tree.insert_unique(position, val);
   }
   // range
   template<class InputIterator>
@@ -210,21 +222,17 @@ class map {
     _m_tree.erase(position);
   }
   size_type erase(const key_type &key) {
-    _m_tree.erase(key);
+    return _m_tree.erase(key);
   }
   void erase(iterator first, iterator last) {
     _m_tree.erase(first, last);
   }
 
   // swap
-  void swap(map &x) {
-    _m_tree.swap(x);
-  }
+  void swap(map &x) { _m_tree.swap(x._m_tree); }
 
   // clear
-  void clear() {
-    _m_tree.clear();
-  }
+  void clear() { _m_tree.clear(); }
 
   /* ****************************************************** */
   /*                      Observers                         */
@@ -254,15 +262,17 @@ class map {
    * @param key
    * @return
    */
-  iterator find(const key_type &k) {}
-  const_iterator find(const key_type &k) const {}
+  iterator find(const key_type &k) { return _m_tree.find(k); }
+  const_iterator find(const key_type &k) const { return _m_tree.find(k); }
 
   /**
    * @brief Searches the container for elements with a key equal to k and returns the number of matches
    * @param k
    * @return 1 if the container contains an element whose key is equivalent to k, or zero otherwise.
    */
-  size_type count(const key_type &k) const {}
+  size_type count(const key_type &k) const {
+    return _m_tree.find(k) == _m_tree.end() ? 0 : 1;
+  }
 
   /**
    * @brief
@@ -272,66 +282,74 @@ class map {
    * Returns an iterator pointing to the first element in the container whose key is not considered to go before k
    * key_comp 를 사용하여 구현한다.
    */
-  iterator lower_bound(const key_type &k) {}
-  const_iterator lower_bound(const key_type &k) const {}
+  iterator lower_bound(const key_type &k) { return _m_tree.lower_bound(k); }
+  const_iterator lower_bound(const key_type &k) const { return _m_tree.lower_bound(k); }
 
   /**
    * @brief Returns an iterator pointing to the first element in the container whose key is considered to go after k.
    * @param k
    * @return
    */
-  iterator upper_bound(const key_type &k) {}
-  const_iterator upper_bound(const key_type &k) const {}
+  iterator upper_bound(const key_type &k) { return _m_tree.upper_bound(k); }
+  const_iterator upper_bound(const key_type &k) const { return _m_tree.upper_bound(k); }
 
   /**
    * @brief Returns the bounds of a range that includes all the elements in the container which have a key equivalent to k.
    * @param k
    * @return
    */
-  pair<const_iterator, const_iterator> equal_range(const key_type &k) const {}
-  pair<iterator, iterator> equal_range(const key_type &k) {}
+  pair<const_iterator, const_iterator> equal_range(const key_type &k) const { return _m_tree.equal_range(k); }
+  pair<iterator, iterator> equal_range(const key_type &k) { return _m_tree.equal_range(k); }
+
+  template<class Key1, class T1, class Compare1, class Alloc1>
+  friend bool operator==(const map<Key1, T1, Compare1, Alloc1> &lhs,
+                         const map<Key1, T1, Compare1, Alloc1> &rhs);
+
+  template<class Key1, class T1, class Compare1, class Alloc1>
+  friend bool operator<(const map<Key1, T1, Compare1, Alloc1> &lhs,
+                        const map<Key1, T1, Compare1, Alloc1> &rhs);
 };
 
 template<class Key, class T, class Compare, class Alloc>
 bool operator==(const map<Key, T, Compare, Alloc> &lhs,
                 const map<Key, T, Compare, Alloc> &rhs) {
-
+  return lhs._m_tree == rhs._m_tree;
 }
 
 template<class Key, class T, class Compare, class Alloc>
 bool operator!=(const map<Key, T, Compare, Alloc> &lhs,
                 const map<Key, T, Compare, Alloc> &rhs) {
-
+  return !(lhs == rhs);
 }
 
 template<class Key, class T, class Compare, class Alloc>
 bool operator<(const map<Key, T, Compare, Alloc> &lhs,
                const map<Key, T, Compare, Alloc> &rhs) {
-
+  return lhs._m_tree < rhs._m_tree;
 }
 
 template<class Key, class T, class Compare, class Alloc>
 bool operator<=(const map<Key, T, Compare, Alloc> &lhs,
                 const map<Key, T, Compare, Alloc> &rhs) {
-
+  return !(rhs < lhs);
 }
 
 template<class Key, class T, class Compare, class Alloc>
 bool operator>(const map<Key, T, Compare, Alloc> &lhs,
                const map<Key, T, Compare, Alloc> &rhs) {
-
+  return (rhs < lhs);
 }
 
 template<class Key, class T, class Compare, class Alloc>
 bool operator>=(const map<Key, T, Compare, Alloc> &lhs,
                 const map<Key, T, Compare, Alloc> &rhs) {
-
+  return !(lhs < rhs);
 }
 
 // swap
 template<class Key, class T, class Compare, class Alloc>
 void swap(map<Key, T, Compare, Alloc> &x, map<Key, T, Compare, Alloc> &y) {
-  
+  x.swap(y);
 }
 
 } // namespace ft
