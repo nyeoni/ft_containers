@@ -295,7 +295,10 @@ class vector : protected _vector_base<T, Allocator> {
   // destroy only erases the elements
   // todo : 메모리 관련 함수 만들어서 그거 이용해서 소멸해보기
   // 벡터 내부의 요소들을 destory 해주는 소멸자
-  virtual ~vector() { _m_destroy_from_end(this->_m_start); };
+  virtual ~vector() {
+    std::cout << "vector destroyed.." << std::endl;
+    _m_destroy_from_end(this->_m_start);
+  };
 
   /**
    * @brief Vector assignment operator.
@@ -852,8 +855,8 @@ class vector : protected _vector_base<T, Allocator> {
 
   iterator _m_fill_insert(iterator position, size_type n, const value_type &val) {
     // position 위치에 n 만틈 val 삽입해주기
-    size_type _n = size() + n;
-    difference_type _pos_idx = position - begin();
+    size_type _n = size() + n; // 1
+    difference_type _pos_idx = position - begin(); // 0 ?
     if (_n > capacity()) {
       vector _tmp;
       _tmp._m_start = _tmp._m_allocate(_n);
@@ -861,7 +864,8 @@ class vector : protected _vector_base<T, Allocator> {
       _tmp._m_fill_elements_n(_tmp._m_finish, n, val);
       _tmp._m_finish = std::uninitialized_copy(this->_m_start + _pos_idx, this->_m_finish, _tmp._m_finish);
       _tmp._m_end_of_storage = _tmp._m_start + _n;
-      _tmp._m_move(*this);
+//      _tmp._m_move(*this);
+      swap(_tmp);
     } else {
       pointer _copy_ep = this->_m_finish + n;
       pointer _copy_sp = this->_m_start + _pos_idx;
