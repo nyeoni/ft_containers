@@ -817,9 +817,9 @@ int main(void) {
     std::cout << GREEN << BOLD << "ft::map - clear is OK" << RESET << std::endl;
 
   std::cout << CYAN << BOLD << "\n\n============= LEAKS ==============n\n" << RESET << std::endl;
-
-  system("leaks a.out");
-
+//
+  system("leaks test");
+//
   std::cout << GREEN << BOLD << "============= TEST is OK =============" << RESET << std::endl;
   return (0);
 }

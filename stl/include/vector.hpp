@@ -296,7 +296,6 @@ class vector : protected _vector_base<T, Allocator> {
   // todo : 메모리 관련 함수 만들어서 그거 이용해서 소멸해보기
   // 벡터 내부의 요소들을 destory 해주는 소멸자
   virtual ~vector() {
-    std::cout << "vector destroyed.." << std::endl;
     _m_destroy_from_end(this->_m_start);
   };
 
@@ -389,7 +388,7 @@ class vector : protected _vector_base<T, Allocator> {
    * vector capacity 리턴해주는 함수
    */
   size_type capacity() const {
-    return size_type(const_iterator(this->_m_end_of_storage) - begin());
+    return size_type(this->_m_end_of_storage - this->_m_start);
   }
 
   /**
@@ -517,7 +516,6 @@ class vector : protected _vector_base<T, Allocator> {
   }
 
   /**
-   *
    * @param n
    * @param val
    *
@@ -529,9 +527,8 @@ class vector : protected _vector_base<T, Allocator> {
   }
 
   /**
-   *
-   * @param val
-   * @todo 2등 구현 함수
+   * @brief Add a new element at the end of the vector
+   * @param val value
    */
   void push_back(const value_type &val) {
     if (this->_m_finish != this->_m_end_of_storage) {
@@ -543,7 +540,7 @@ class vector : protected _vector_base<T, Allocator> {
   }
 
   /**
-   * 맨 뒤에 요소 삭제
+   * @brief Remove element at the end of the vector
    */
   void pop_back() {
     // todo 확인해봐야함
@@ -855,16 +852,15 @@ class vector : protected _vector_base<T, Allocator> {
 
   iterator _m_fill_insert(iterator position, size_type n, const value_type &val) {
     // position 위치에 n 만틈 val 삽입해주기
-    size_type _n = size() + n; // 1
-    difference_type _pos_idx = position - begin(); // 0 ?
+    size_type _n = size() + n;
+    difference_type _pos_idx = position - begin();
     if (_n > capacity()) {
       vector _tmp;
-      _tmp._m_start = _tmp._m_allocate(_n);
+      _tmp._m_start = _tmp._m_allocate(_n * 2);
       _tmp._m_finish = std::uninitialized_copy(this->_m_start, this->_m_start + _pos_idx, _tmp._m_start);
       _tmp._m_fill_elements_n(_tmp._m_finish, n, val);
       _tmp._m_finish = std::uninitialized_copy(this->_m_start + _pos_idx, this->_m_finish, _tmp._m_finish);
-      _tmp._m_end_of_storage = _tmp._m_start + _n;
-//      _tmp._m_move(*this);
+      _tmp._m_end_of_storage = _tmp._m_start + _n * 2;
       swap(_tmp);
     } else {
       pointer _copy_ep = this->_m_finish + n;
