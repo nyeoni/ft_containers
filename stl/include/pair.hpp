@@ -24,7 +24,9 @@ struct pair {
   second_type second;
 
   pair() : first(), second() {}
-  
+
+  explicit pair(const pair &src) : first(src.first), second(src.second) {}
+
   template<class U, class V>
   pair(const pair<U, V> &pr) : first(pr.first), second(pr.second) {}
 
