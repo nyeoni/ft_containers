@@ -50,6 +50,7 @@
 ## allocator
 
 - `<memory>` 헤더에 존재함
+- `Type` 의 개체 배열에 대한 스토리지 할당 및 해제를 관리하는 개체
 - 유연한 메모리 관리를 해주는 클래스
 - 주로 라이브러리를 작성할 때, 특히 표준 라이브러리의 컨테이너를 구현할 때 많이 사용하는 클래스
 - 할당자는 메모리 관리를 좀 더 세밀하게 컨트롤해야할 수 있는 `fine-grained` 방식
@@ -86,6 +87,10 @@ void uninitialized_fill(For, For, const T&);
 - `deallocate` : 메모리 공간을 해제하는 함수
 - `construct` : 초기화 되지 않은 공간에 요소를 저장하는 함수
 - `destroy` : 요소를 소멸시키는 함수
+- `rebind`
+    - 한 형식의 개체에 할당자를 사용하여 다른 형식의 개체에 스토리지를 할당할 수 있는 구조체이다.
+    - 요즘은 `allocator` 클래스의 멤버로 쓰이지 않고, `allocator_traits` 에 `alias` 로 등록되어 있는 것을 사용하여 더 효율적인 방식으로 쓰인다.
+    - `c++17` 부터 폐기되었고 `c++20` 에서 삭제되었다.
 - `uninitialize_copy`
     - STL 의 `std::copy` 와 비슷한 함수. [first, last) 범위의 요소들을 순방향 반복자가 가리키는 위치에 순서대로 복사한다. 그리고 복사가 완료된 위치의
       다음 요소를 가리키는 포인터를 반환한다. -> 중간에 요소 삽입하다가 에러나면 이전의 상태로 바꿔줌
@@ -211,6 +216,29 @@ type_traits 헤더 안에는 템플릿 메타 함수들이 구현되어 있다. 
       //
       // 2. realloc
       // - 새로운 vector 생성 -pos -1 까지 기존 벡터에서 값 복사 -val 값 넣기 -pos + 1 부터 값 복사 // 기존 벡터 free
+
+## map
+
+`map` 은 연관컨테이너 종류 중 하나로 `(key, value)` 의 쌍을 값으로 갖는다. `map` 에서 `(key, value)`는 정렬, 탐색을 할 때 사용된다. `key` 와 `value` 의
+타입은 다를 수 있으며 `value_type` 으로 `pair` 타입을 갖는다.
+`typedef pair<const Key, T> value_type`
+
+내부적으로 `map` 의 요소들은 comparison object 인 `Compare` 타입에 따라 정렬된다. `map` 컨테이너는 `key` 를 통해 개별 요소에 접근할 때 `unordered_map` 보다 대체로
+느리지만,
+`map` 은 반복자를 통해 순서에 따라 요소에 접근이 가능하다.
+`map` 은 보통 이진탐색트리로 구현되어 있다.
+
+### Red-Black tree
+
+여기서 `Compare` 는 `unary_function` 을 상속받는 `functor` 를 가리킨다. 요소의 대소비교를 어떻게 할지 나타내는 객체를 넘겨주면 된다.
+`rebind` 를 하는 이유는 allocator 가 어떤 타입을 요소로 할당을 할지 결정하기 위해 쓰인다.
+
+- rb_tree
+- rb_tree_node
+- rb_tree_node_base
+
+### `self` 를 쓰는 이유
+- 
 
 ## Reference
 
