@@ -17,10 +17,6 @@
 #include "reverse_iterator.hpp"
 #include "ftexcept.hpp"
 
-// 나중에 지우기
-#include <vector>
-#include <iostream>
-
 namespace ft {
 
 /**
@@ -47,6 +43,7 @@ class _vector_iterator : public std::iterator<std::random_access_iterator_tag,
   typedef typename iterator_traits<Iter>::value_type value_type;
 
   // constructor
+  // _vector_iterator 에 explicit 뺀 이유 설명하기
   _vector_iterator() : _it() {}
   _vector_iterator(const Iter &it) : _it(it) {}
   template<typename U>
@@ -256,7 +253,7 @@ class vector : protected _vector_base<T, Allocator> {
    *
    * Constructs a container with n elements. Each element is a copy of val.
    * vector(n), vector(n, val), vector(n, val, alloc) 다 가능한 형태의 생성자. default param 값을 지정해줌으로서.
-   * Base(n, alloc) 함수를 통해서 alloc 을 통해 n 만큼의 벡터 메모리 공간을 할당받음
+   * _base(n, alloc) 함수를 통해서 alloc 을 통해 n 만큼의 벡터 메모리 공간을 할당받음
    * uninitialized_fill_n 함수를 통해서 새로 할당된 벡터 메모리 공간에 n 만큼 val 값을 채워줌
    */
   explicit vector(size_type n, const value_type &val = value_type(),
@@ -288,7 +285,7 @@ class vector : protected _vector_base<T, Allocator> {
    *
    * Constructs a container with a copy of each of the elements in x, in the same order.
    * 새로 생성된 벡터에 x 벡터의 값들을 uninitialized_copy 함수를 이용하여 복사한다. 값만 복사되고 메모리 복사는 일어나지 않는다.
-   * Base(x.size(), x.get_allocator()) 함수를 통해서 새로 메모리 공간을 할당 받음
+   * _base(x.size(), x.get_allocator()) 함수를 통해서 새로 메모리 공간을 할당 받음
    * uninialized_copy 함수를 통해서 새로 할당 받은 메모리에 %x 벡터의 값들을 복사함
    */
   vector(const vector &x) : Base(x.size(), x.get_allocator()) {
