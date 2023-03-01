@@ -24,8 +24,10 @@ struct pair {
   second_type second;
 
   pair() : first(), second() {}
+  
   template<class U, class V>
-  explicit pair(const pair<U, V> &pr) : first(pr.first), second(pr.second) {}
+  pair(const pair<U, V> &pr) : first(pr.first), second(pr.second) {}
+
   pair(const first_type &a, const second_type &b) : first(a), second(b) {}
 
   pair &operator=(const pair &pr) {
