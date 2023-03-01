@@ -757,7 +757,6 @@ class vector : protected _vector_base<T, Allocator> {
   void _m_assign_aux(InputIterator first, InputIterator last, false_type) {
     // input iterator_traits assign logic
     clear();
-    // @todo ++first 붙이는 이유 first++ 하는거 확인해보기
     for (; first != last; first++) {
       push_back(*first);
     }
@@ -839,6 +838,7 @@ class vector : protected _vector_base<T, Allocator> {
       _tmp._m_end_of_storage = _tmp._m_start + _n;
       _tmp._m_move(*this);
     } else {
+      _n = std::distance(first, last);
       pointer _copy_ep = this->_m_finish + _n;
       pointer _copy_sp = this->_m_start + _pos_idx;
       while (_copy_ep != _copy_sp) {
