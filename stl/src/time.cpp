@@ -59,6 +59,7 @@ int main(void) {
   gettimeofday(&ft_start, NULL);
   {
     ft::vector<int> vector_int;
+    vector_int.reserve(VEC_SIZE);
     for (int i = 0; i < VEC_SIZE; i++) vector_int.push_back(i);
   }
   gettimeofday(&ft_end, NULL);
@@ -70,6 +71,7 @@ int main(void) {
   gettimeofday(&std_start, NULL);
   {
     std::vector<int> std_vector_int;
+    std_vector_int.reserve(VEC_SIZE);
     for (int i = 0; i < VEC_SIZE; i++) std_vector_int.push_back(i);
   }
   gettimeofday(&std_end, NULL);
@@ -357,6 +359,7 @@ int main(void) {
   gettimeofday(&ft_start, NULL);
   {
     ft::vector<int> vector_int;
+    vector_int.reserve(VEC_SIZE);
     for (int i = 0; i < VEC_SIZE; i++) vector_int.push_back(i);
   }
   gettimeofday(&ft_end, NULL);
@@ -367,6 +370,7 @@ int main(void) {
   gettimeofday(&std_start, NULL);
   {
     std::vector<int> std_vector_int;
+    std_vector_int.reserve(VEC_SIZE);
     for (int i = 0; i < VEC_SIZE; i++) std_vector_int.push_back(i);
   }
   gettimeofday(&std_end, NULL);
@@ -423,6 +427,7 @@ int main(void) {
   gettimeofday(&ft_start, NULL);
   {
     ft::vector<int> vector_int;
+    vector_int.reserve(VEC_SIZE);
     for (int i = 0; i < VEC_SIZE; i++) vector_int.push_back(i);
   }
   gettimeofday(&ft_end, NULL);
@@ -434,6 +439,7 @@ int main(void) {
   gettimeofday(&std_start, NULL);
   {
     std::vector<int> std_vector_int;
+    std_vector_int.reserve(VEC_SIZE);
     for (int i = 0; i < VEC_SIZE; i++) std_vector_int.push_back(i);
   }
   gettimeofday(&std_end, NULL);
@@ -818,7 +824,7 @@ int main(void) {
 
   std::cout << CYAN << BOLD << "\n\n============= LEAKS ==============n\n" << RESET << std::endl;
 //
-  system("leaks test");
+  system("leaks tmp");
 //
   std::cout << GREEN << BOLD << "============= TEST is OK =============" << RESET << std::endl;
   return (0);
