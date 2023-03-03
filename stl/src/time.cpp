@@ -824,7 +824,7 @@ int main(void) {
 
   std::cout << CYAN << BOLD << "\n\n============= LEAKS ==============n\n" << RESET << std::endl;
 //
-  system("leaks tmp");
+  system("leaks time_test");
 //
   std::cout << GREEN << BOLD << "============= TEST is OK =============" << RESET << std::endl;
   return (0);

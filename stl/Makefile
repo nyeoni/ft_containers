@@ -10,6 +10,8 @@ else ifdef FT
 	CFLAGS	=	-std=c++98 -g
 else ifdef STD
 	CFLAGS	=	-std=c++98 -g -D STD
+else ifdef TIME
+	CFLAGS	=	-std=c++98 -g
 else
 	CFLAGS	=	-std=c++98 -Wall -Wextra -Werror
 endif
@@ -19,14 +21,20 @@ ifdef FT
 	NAME 	=	ft_test
 else ifdef STD
 	NAME 	=	std_test
+else ifdef TIME
+	NAME	=	time_test
 else
 	NAME 	=	container
 endif
 
+SRC_DIR		=	./src/
+
 ifdef TEST
-	SRC		=	src/test.cpp
+	SRC		=	$(addprefix $(SRC_DIR), test.cpp tree.cpp)
+else ifdef TIME
+	SRC		=	$(addprefix $(SRC_DIR), time.cpp tree.cpp)
 else
-	SRC		=	$(addprefix src/, main.cpp tree.cpp)
+	SRC		=	$(addprefix $(SRC_DIR), main.cpp tree.cpp)
 endif
 
 INC_DIR		=	include/
@@ -56,6 +64,7 @@ fclean: clean
 	@rm -f $(NAME)
 	@rm -f ft_test
 	@rm -f std_test
+	@rm -f time_test
 	@echo $(BOLD)$(L_PURPLE) ✨ $(NAME) ✨ $(PINK)have been cleaned....🗑️$(RESET)
 
 .PHONY: re
@@ -72,6 +81,11 @@ ft:
 std:
 	@make TEST=1 STD=1 all # test FT = 0 needed
 	@rm -f src/test.o
+
+.PHONY: time
+time:
+	@make TIME=1 all
+	@rm -f src/time.o
 
 .PHONY: debug
 debug:

@@ -1,0 +1,185 @@
+             NAMESPACE_STRING == ft
+VECTOR TEST
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+100
+100
+100
+100
+100
+100
+100
+100
+100
+100
+100
+100
+100
+100
+100
+100
+100
+100
+100
+100
+100
+              default_v.at(0) == 0
+              default_v.at(1) == 1
+                 default_v[0] == 0
+                 default_v[2] == 2
+            default_v.front() == 0
+             default_v.back() == 9
+           *default_v.begin() == 0
+             *default_v.end() == 0
+          *default_v.rbegin() == 9
+            *default_v.rend() == 0
+         default_v.capacity() == 10
+                tmp_v.empty() == 1
+            default_v.empty() == 0
+0
+1
+2
+3
+4
+5
+6
+7
+8
+0
+4
+4
+4
+4
+4
+4
+4
+4
+4
+                 tmp_v.size() == 8
+                 tmp_v.size() == 12
+100
+100
+100
+100
+4
+4
+4
+4
+4
+4
+4
+4
+             tmp_v.max_size() == 4611686018427387903
+4
+4
+4
+0
+0
+             default_v.size() == 3
+4
+0
+0
+100
+100
+100
+100
+4
+4
+4
+4
+4
+4
+4
+4
+4
+0
+0
+STACK TEST
+                stack.empty() == 1
+                  stack.top() == 9
+                  stack.top() == 8
+                  stack.top() == 7
+                  stack.top() == 6
+                  stack.top() == 5
+                  stack.top() == 4
+                  stack.top() == 3
+                  stack.top() == 2
+                  stack.top() == 1
+                  stack.top() == 0
+                 stack.size() == 0
+                 stack.size() == 1
+                    tmp.top() == 4
+MAP TEST
+a : 10
+b : 30
+c : 50
+d : 70
+a : 10
+b : 30
+c : 50
+d : 70
+a : 10
+b : 30
+c : 50
+d : 70
+   default_map.begin()->first == a
+ (--default_map.end())->first == d
+  default_map.rbegin()->first == d
+(--default_map.rend())->first == a
+                  tmp.empty() == 1
+          default_map.empty() == 0
+default_map.equal_range('b').first->first == b
+a : 10
+c : 50
+d : 70
+c : 50
+d : 70
+d : 70
+   range_map.find('a')->first == a
+   range_map.find('b')->first == b
+   range_map.find('c')->first == c
+a : 10
+b : 30
+c : 50
+d : 70
+f : 2
+a : 10
+b : 30
+c : 50
+d : 70
+f : 2
+g : 2
+a : 10
+b : 30
+c : 50
+d : 70
+f : 2
+g : 2
+b=>30
+c=>50
+d=>70
+f=>2
+g=>2
+copy_map.lower_bound('b')->first == b
+copy_map.upper_bound('b')->first == c
+          copy_map.max_size() == 461168601842738790
+                copy_map['a'] == 10
+                copy_map['b'] == 30
+                copy_map['c'] == 50
+              copy_map.size() == 6
+           default_map.size() == 1
+d : 70
+a : 10
+b : 30
+c : 50
+d : 70
+f : 2
+g : 2

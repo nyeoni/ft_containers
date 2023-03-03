@@ -9,8 +9,8 @@
 #ifndef ITERATOR_TRAITS_HPP_
 #define ITERATOR_TRAITS_HPP_
 
-#include <array>
 #include <cstddef>
+#include <iterator>
 
 namespace ft {
 

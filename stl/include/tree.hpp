@@ -102,6 +102,11 @@ struct _rb_tree_header {
   }
 };
 
+_rb_tree_node_base *_rb_tree_increment(_rb_tree_node_base *x) throw();
+const _rb_tree_node_base *_rb_tree_increment(const _rb_tree_node_base *x) throw();
+_rb_tree_node_base *_rb_tree_decrement(_rb_tree_node_base *x) throw();
+const _rb_tree_node_base *_rb_tree_decrement(const _rb_tree_node_base *x) throw();
+
 template<typename T>
 struct _rb_tree_iterator {
   typedef _rb_tree_iterator<T> iterator;
